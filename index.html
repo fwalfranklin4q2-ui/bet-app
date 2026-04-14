@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>投注助手 V3</title>
+<title>投注助手 V4</title>
 
 <style>
 body{
@@ -60,20 +60,20 @@ body{
 
 <div class="app">
 
-<div class="title">🔥 投注助手 V3（自动分析）</div>
+<div class="title">🔥 投注助手 V4（实战版）</div>
 
 <div class="card">
 <div>输入赔率</div>
 
-<input class="input" id="odds1" placeholder="主胜赔率（如 1.85）">
-<input class="input" id="odds2" placeholder="平局赔率（如 3.20）">
-<input class="input" id="odds3" placeholder="客胜赔率（如 4.10）">
+<input class="input" id="odds1" placeholder="主胜赔率">
+<input class="input" id="odds2" placeholder="平局赔率">
+<input class="input" id="odds3" placeholder="客胜赔率">
 
 <div class="btn" onclick="analyze()">开始分析</div>
 </div>
 
 <div class="card" id="result">
-等待输入赔率...
+等待分析...
 </div>
 
 </div>
@@ -91,7 +91,6 @@ if(!o1 || !o2 || !o3){
   return
 }
 
-// 概率计算
 let p1 = 1/o1
 let p2 = 1/o2
 let p3 = 1/o3
@@ -102,7 +101,6 @@ p1/=sum
 p2/=sum
 p3/=sum
 
-// 最大概率
 let max = Math.max(p1,p2,p3)
 
 let result = ""
@@ -110,27 +108,42 @@ if(max === p1) result = "胜"
 if(max === p2) result = "平"
 if(max === p3) result = "负"
 
-// 命中率
 let score = Math.round(max*100)
 
-// 策略
-let level = ""
+// 风险判断
+let risk = ""
+let riskColor = ""
+
 if(score >= 65){
-  level = "主线（可重注）"
+  risk = "低风险（稳）"
+  riskColor = "green"
 }else if(score >= 55){
-  level = "增强（中等）"
+  risk = "中风险"
+  riskColor = "yellow"
 }else{
-  level = "防守（小注）"
+  risk = "高风险（不建议单买）"
+  riskColor = "red"
 }
 
-// 金额建议
+// 投注建议
 let money = Math.round(score * 2)
 
+// 串关建议
+let combo = ""
+if(score >= 65){
+  combo = "适合做串关主线"
+}else if(score >= 55){
+  combo = "可做辅助串关"
+}else{
+  combo = "仅建议防守或放弃"
+}
+
 document.getElementById("result").innerHTML = `
-<div class="green">推荐：${result}</div>
+<div class="${riskColor}">推荐：${result}</div>
 <div>命中率：${score}%</div>
-<div class="yellow">策略：${level}</div>
+<div class="${riskColor}">风险：${risk}</div>
 <div>建议下注：${money} 元</div>
+<div>串关建议：${combo}</div>
 `
 
 }
