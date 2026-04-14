@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>投注助手 V3</title>
 
 <style>
@@ -19,32 +19,35 @@ body{
   padding:16px;
 }
 
-.card{
-  background:#121a2b;
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:14px;
+.title{
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:12px;
 }
 
-.title{
-  font-size:20px;
-  font-weight:bold;
+.card{
+  background:#121a2b;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
 }
 
 .input{
   width:100%;
-  padding:10px;
+  padding:12px;
   margin-top:8px;
-  border-radius:8px;
+  border-radius:10px;
   border:none;
+  font-size:16px;
 }
 
 .btn{
   margin-top:12px;
   background:#3b82f6;
-  padding:12px;
+  padding:14px;
   text-align:center;
-  border-radius:10px;
+  border-radius:12px;
+  font-size:16px;
 }
 
 .green{color:#4ade80}
@@ -57,20 +60,20 @@ body{
 
 <div class="app">
 
-<div class="title">🔥 投注助手 V3</div>
+<div class="title">🔥 投注助手 V3（自动分析）</div>
 
 <div class="card">
-<div>输入比赛（赔率）</div>
+<div>输入赔率</div>
 
-<input class="input" id="odds1" placeholder="主胜赔率">
-<input class="input" id="odds2" placeholder="平局赔率">
-<input class="input" id="odds3" placeholder="客胜赔率">
+<input class="input" id="odds1" placeholder="主胜赔率（如 1.85）">
+<input class="input" id="odds2" placeholder="平局赔率（如 3.20）">
+<input class="input" id="odds3" placeholder="客胜赔率（如 4.10）">
 
 <div class="btn" onclick="analyze()">开始分析</div>
 </div>
 
 <div class="card" id="result">
-等待分析...
+等待输入赔率...
 </div>
 
 </div>
@@ -84,11 +87,11 @@ let o2 = parseFloat(document.getElementById('odds2').value)
 let o3 = parseFloat(document.getElementById('odds3').value)
 
 if(!o1 || !o2 || !o3){
-  alert("填完整赔率")
+  alert("请输入完整赔率")
   return
 }
 
-// 转概率
+// 概率计算
 let p1 = 1/o1
 let p2 = 1/o2
 let p3 = 1/o3
@@ -99,27 +102,25 @@ p1/=sum
 p2/=sum
 p3/=sum
 
-// 找最大
+// 最大概率
 let max = Math.max(p1,p2,p3)
 
 let result = ""
-let bet = ""
+if(max === p1) result = "胜"
+if(max === p2) result = "平"
+if(max === p3) result = "负"
 
-if(max === p1){ result = "胜" }
-if(max === p2){ result = "平" }
-if(max === p3){ result = "负" }
-
-// 风险评分
+// 命中率
 let score = Math.round(max*100)
 
-if(score > 65){
-  bet = "主线（可重注）"
-}
-else if(score > 55){
-  bet = "增强（中等）"
-}
-else{
-  bet = "防守（小注）"
+// 策略
+let level = ""
+if(score >= 65){
+  level = "主线（可重注）"
+}else if(score >= 55){
+  level = "增强（中等）"
+}else{
+  level = "防守（小注）"
 }
 
 // 金额建议
@@ -128,7 +129,7 @@ let money = Math.round(score * 2)
 document.getElementById("result").innerHTML = `
 <div class="green">推荐：${result}</div>
 <div>命中率：${score}%</div>
-<div class="yellow">策略：${bet}</div>
+<div class="yellow">策略：${level}</div>
 <div>建议下注：${money} 元</div>
 `
 
