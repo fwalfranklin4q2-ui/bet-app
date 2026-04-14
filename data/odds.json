@@ -1,4 +1,25 @@
 {
-  "updated_at": "",
-  "matches": []
+  "updated_at": "2026-04-14 18:14:50 UTC",
+  "matches": [
+    {
+      "id": "2006",
+      "home": "博卡青年",
+      "away": "巴塞罗那",
+      "league": "解放者杯",
+      "homeOdds": 1.26,
+      "drawOdds": 4.4,
+      "awayOdds": 9.3,
+      "note": "稳胆"
+    },
+    {
+      "id": "2007",
+      "home": "基多大学",
+      "away": "米拉索尔",
+      "league": "解放者杯",
+      "homeOdds": 1.69,
+      "drawOdds": 3.4,
+      "awayOdds": 4.1,
+      "note": "次稳"
+    }
+  ]
 }
