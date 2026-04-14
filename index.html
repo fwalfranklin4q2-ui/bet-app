@@ -1,505 +1,183 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>投注助手 V7.1（一键替换版）</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>投注助手 V9（实战版）</title>
+
 <style>
-  :root{
-    --bg:#0b1220;
-    --panel:#121a2b;
-    --panel2:#0f172a;
-    --line:#23314f;
-    --text:#ffffff;
-    --muted:#9ca3af;
-    --blue:#4a7cff;
-    --green:#4ade80;
-    --yellow:#facc15;
-    --red:#f87171;
-    --purple:#8b5cf6;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif;
-  }
-  .app{
-    max-width:430px;
-    margin:auto;
-    padding:16px;
-  }
-  .title{
-    font-size:24px;
-    font-weight:800;
-    margin-bottom:14px;
-  }
-  .sub{
-    color:var(--muted);
-    font-size:13px;
-    margin-top:-6px;
-    margin-bottom:14px;
-  }
-  .card{
-    background:var(--panel);
-    border-radius:16px;
-    padding:14px;
-    margin-bottom:14px;
-  }
-  .card h3{
-    margin:0 0 10px 0;
-    font-size:18px;
-  }
-  .input, .textarea{
-    width:100%;
-    border:none;
-    border-radius:12px;
-    padding:12px;
-    font-size:15px;
-    background:#f3f4f6;
-    color:#111827;
-    margin-top:8px;
-  }
-  .textarea{
-    min-height:240px;
-    resize:vertical;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  }
-  .btn{
-    width:100%;
-    margin-top:12px;
-    border:none;
-    border-radius:12px;
-    padding:14px;
-    font-size:16px;
-    font-weight:700;
-    background:var(--blue);
-    color:#fff;
-  }
-  .btn.secondary{
-    background:#26354f;
-  }
-  .btn.warn{
-    background:var(--purple);
-  }
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:10px;
-  }
-  .kpi{
-    background:var(--panel2);
-    border-radius:14px;
-    padding:14px 12px;
-    text-align:center;
-  }
-  .kpi .v{
-    font-size:22px;
-    font-weight:800;
-  }
-  .kpi .l{
-    margin-top:4px;
-    font-size:12px;
-    color:var(--muted);
-  }
-  .resultBox{
-    line-height:1.7;
-    font-size:15px;
-  }
-  .tag{
-    display:inline-block;
-    padding:4px 8px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:700;
-    margin-right:6px;
-  }
-  .green{color:var(--green)}
-  .yellow{color:var(--yellow)}
-  .red{color:var(--red)}
-  .tag.green{background:rgba(74,222,128,.15); color:var(--green)}
-  .tag.yellow{background:rgba(250,204,21,.15); color:var(--yellow)}
-  .tag.red{background:rgba(248,113,113,.15); color:var(--red)}
-  .tag.blue{background:rgba(74,124,255,.15); color:#a5bfff}
-  .match{
-    background:var(--panel2);
-    border-radius:14px;
-    padding:12px;
-    margin-top:10px;
-  }
-  .match .top{
-    display:flex;
-    justify-content:space-between;
-    gap:8px;
-    align-items:flex-start;
-  }
-  .match .name{
-    font-weight:700;
-    font-size:16px;
-  }
-  .small{
-    color:var(--muted);
-    font-size:13px;
-  }
-  .divider{
-    height:1px;
-    background:#24324d;
-    margin:10px 0;
-  }
-  .codeHint{
-    font-size:12px;
-    color:var(--muted);
-    margin-top:6px;
-  }
+body{
+  margin:0;
+  background:#0b1220;
+  color:#fff;
+  font-family:-apple-system;
+}
+.app{
+  max-width:430px;
+  margin:auto;
+  padding:16px;
+}
+.card{
+  background:#121a2b;
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:14px;
+}
+input,textarea{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  margin-bottom:10px;
+  font-size:16px;
+}
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(90deg,#6a5cff,#8f5cff);
+  color:#fff;
+  font-size:16px;
+}
+.tag{
+  padding:2px 8px;
+  border-radius:6px;
+  font-size:12px;
+}
+.ok{background:#1f8f4d;}
+.mid{background:#b88700;}
+.bad{background:#8f2a2a;}
 </style>
 </head>
+
 <body>
 <div class="app">
 
-  <div class="title">🔥 投注助手 V7.1（一键替换版）</div>
-  <div class="sub">自动读取后台赔率 JSON｜失败回退手动数据｜自动分析｜风险分层｜2串1建议｜资金分配</div>
+<h2>🔥 投注助手 V9（实战版）</h2>
 
-  <div class="card">
-    <h3>总控参数</h3>
-    <input id="budget" class="input" type="number" value="200" placeholder="总预算，例如 200">
-    <input id="singleMatch" class="input" type="text" value="2003" placeholder="单关场编号，例如 2003">
-    <div class="codeHint">预算用于自动分配主线 / 防守 / 利润层。单关场只在你指定编号上放开利润建议。</div>
-  </div>
+<div class="card">
+  <b>总预算</b>
+  <input id="budget" value="200">
+</div>
 
-  <div class="card">
-    <h3>自动赔率入口</h3>
-    <div class="small" id="fetchStatus">当前状态：页面初始化中...</div>
-    <button class="btn warn" onclick="fetchOdds()">立即读取后台数据</button>
-    <div class="codeHint">
-      默认读取 <b>./data/odds.json</b><br>
-      如果读取失败，会自动回退到手动数据。
-    </div>
-  </div>
+<div class="card">
+  <b>自动赔率状态</b>
+  <div id="status">加载中...</div>
+  <button onclick="loadData()">立即读取后台数据</button>
+</div>
 
-  <div class="card">
-    <h3>手动比赛数据（回退用）</h3>
-    <textarea id="dataset" class="textarea">[
-  {"id":"2001","home":"胡拜尔库","away":"利雅得青年","league":"沙特超","homeOdds":1.43,"drawOdds":4.35,"awayOdds":5.00,"note":"诱盘风险"},
-  {"id":"2002","home":"马竞","away":"巴萨","league":"欧冠","homeOdds":3.82,"drawOdds":4.50,"awayOdds":1.55,"note":"赔率异常"},
-  {"id":"2003","home":"利物浦","away":"巴黎","league":"欧冠","homeOdds":2.22,"drawOdds":3.95,"awayOdds":2.35,"note":"均势高波动"},
-  {"id":"2004","home":"南安普顿","away":"布莱克本","league":"英冠","homeOdds":1.39,"drawOdds":4.15,"awayOdds":5.90,"note":"强队诱盘"},
-  {"id":"2005","home":"朴茨茅斯","away":"伊普斯维","league":"英冠","homeOdds":4.00,"drawOdds":3.35,"awayOdds":1.72,"note":"客强但不稳"},
-  {"id":"2006","home":"博卡青年","away":"巴塞罗那","league":"解放者杯","homeOdds":1.26,"drawOdds":4.40,"awayOdds":9.30,"note":"稳胆"},
-  {"id":"2007","home":"基多大学","away":"米拉索尔","league":"解放者杯","homeOdds":1.69,"drawOdds":3.40,"awayOdds":4.10,"note":"次稳"}
-]</textarea>
-    <button class="btn" onclick="runAnalysis()">手动数据分析</button>
-    <button class="btn secondary" onclick="loadDemo()">恢复默认样例</button>
-    <div class="codeHint">手动 JSON 是后备方案。接口失败时自动用它继续跑。</div>
-  </div>
-
-  <div class="card">
-    <h3>预算概览</h3>
-    <div class="grid">
-      <div class="kpi">
-        <div class="v" id="kpiBudget">200</div>
-        <div class="l">总预算</div>
-      </div>
-      <div class="kpi">
-        <div class="v" id="kpiMain">0</div>
-        <div class="l">主线</div>
-      </div>
-      <div class="kpi">
-        <div class="v" id="kpiDefense">0</div>
-        <div class="l">防守/利润</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>核心结论</h3>
-    <div id="summary" class="resultBox">等待分析...</div>
-  </div>
-
-  <div class="card">
-    <h3>逐场判断</h3>
-    <div id="matchList">等待分析...</div>
-  </div>
-
-  <div class="card">
-    <h3>2串1建议</h3>
-    <div id="comboList" class="resultBox">等待分析...</div>
-  </div>
+<div class="card">
+  <b>分析结果</b>
+  <div id="result">等待分析...</div>
+</div>
 
 </div>
 
 <script>
-const demoData = `[
-  {"id":"2001","home":"胡拜尔库","away":"利雅得青年","league":"沙特超","homeOdds":1.43,"drawOdds":4.35,"awayOdds":5.00,"note":"诱盘风险"},
-  {"id":"2002","home":"马竞","away":"巴萨","league":"欧冠","homeOdds":3.82,"drawOdds":4.50,"awayOdds":1.55,"note":"赔率异常"},
-  {"id":"2003","home":"利物浦","away":"巴黎","league":"欧冠","homeOdds":2.22,"drawOdds":3.95,"awayOdds":2.35,"note":"均势高波动"},
-  {"id":"2004","home":"南安普顿","away":"布莱克本","league":"英冠","homeOdds":1.39,"drawOdds":4.15,"awayOdds":5.90,"note":"强队诱盘"},
-  {"id":"2005","home":"朴茨茅斯","away":"伊普斯维","league":"英冠","homeOdds":4.00,"drawOdds":3.35,"awayOdds":1.72,"note":"客强但不稳"},
-  {"id":"2006","home":"博卡青年","away":"巴塞罗那","league":"解放者杯","homeOdds":1.26,"drawOdds":4.40,"awayOdds":9.30,"note":"稳胆"},
-  {"id":"2007","home":"基多大学","away":"米拉索尔","league":"解放者杯","homeOdds":1.69,"drawOdds":3.40,"awayOdds":4.10,"note":"次稳"}
-]`;
 
-function loadDemo(){
-  document.getElementById('dataset').value = demoData;
-  document.getElementById('fetchStatus').textContent = '当前状态：已恢复默认样例';
-}
+let matches = []
 
-function impliedProb(odds){
-  return odds > 0 ? 1 / odds : 0;
-}
-
-function normalize3(a,b,c){
-  const s = a+b+c;
-  return s > 0 ? [a/s,b/s,c/s] : [0,0,0];
-}
-
-function round(n){
-  return Math.round(n);
-}
-
-function analyzeMatch(m, singleMatch){
-  let ph = impliedProb(m.homeOdds);
-  let pd = impliedProb(m.drawOdds);
-  let pa = impliedProb(m.awayOdds);
-  [ph,pd,pa] = normalize3(ph,pd,pa);
-
-  let pick = '平';
-  let maxP = pd;
-  if(ph > maxP){ maxP = ph; pick = '胜'; }
-  if(pa > maxP){ maxP = pa; pick = '负'; }
-
-  let score = round(maxP * 100);
-
-  const note = (m.note || '');
-  const diffHomeAway = Math.abs(m.homeOdds - m.awayOdds);
-
-  if(note.includes('诱盘')) score -= 10;
-  if(note.includes('赔率异常')) score -= 12;
-  if(note.includes('强队诱盘')) score -= 18;
-  if(note.includes('均势')) score -= 12;
-  if(note.includes('稳胆')) score += 12;
-  if(note.includes('次稳')) score += 6;
-  if(note.includes('客强但不稳')) score -= 5;
-  if(m.drawOdds < 3.0) score -= 8;
-  if(diffHomeAway < 0.4) score -= 10;
-  if(score > 90) score = 90;
-  if(score < 30) score = 30;
-
-  let level = '防守';
-  let riskColor = 'yellow';
-  let advice = '小注或串关防守';
-
-  if(score >= 72){
-    level = '主线';
-    riskColor = 'green';
-    advice = '可做主线';
-  }else if(score >= 58){
-    level = '增益';
-    riskColor = 'yellow';
-    advice = '可做辅助串关';
-  }else if(score < 45){
-    level = '放弃';
-    riskColor = 'red';
-    advice = '不建议介入';
-  }
-
-  if(m.id === singleMatch && level !== '放弃'){
-    advice += '｜指定单关场可利润小单';
-  }
-
-  return {
-    ...m,
-    pick,
-    score,
-    level,
-    riskColor,
-    advice,
-    probs:{
-      win: round(ph*100),
-      draw: round(pd*100),
-      lose: round(pa*100)
-    }
-  };
-}
-
-function allocateBankroll(results, totalBudget, singleMatch){
-  let mainPool = Math.round(totalBudget * 0.5);
-  let sidePool = totalBudget - mainPool;
-
-  const mains = results.filter(x => x.level === '主线').slice(0,2);
-  const gains = results.filter(x => x.level === '增益').slice(0,2);
-  const defense = results.filter(x => x.level === '防守').slice(0,1);
-  const single = results.find(x => x.id === singleMatch && x.level !== '放弃');
-
-  const plans = [];
-
-  if(mains.length >= 2){
-    plans.push({
-      type:'主线2串1',
-      text:`${mains[0].id}${mains[0].pick} × ${mains[1].id}${mains[1].pick}`,
-      amount: Math.round(mainPool * 0.6)
-    });
-  }
-
-  if(mains.length >= 1 && gains.length >= 1){
-    plans.push({
-      type:'增强2串1',
-      text:`${mains[0].id}${mains[0].pick} × ${gains[0].id}${gains[0].pick}`,
-      amount: Math.round(sidePool * 0.35)
-    });
-  }
-
-  if(defense.length >= 1 && mains.length >= 1){
-    plans.push({
-      type:'防守2串1',
-      text:`${defense[0].id}${defense[0].pick} × ${mains[0].id}${mains[0].pick}`,
-      amount: Math.round(sidePool * 0.25)
-    });
-  }
-
-  if(single){
-    plans.push({
-      type:'利润单',
-      text:`${single.id}${single.pick}`,
-      amount: Math.round(sidePool * 0.20)
-    });
-  }
-
-  return {
-    mainPool,
-    sidePool,
-    plans
-  };
-}
-
-function renderSummary(results, bankroll, singleMatch){
-  const mains = results.filter(x => x.level === '主线').slice(0,2);
-  const gains = results.filter(x => x.level === '增益').slice(0,2);
-  const defense = results.filter(x => x.level === '防守').slice(0,1);
-  const single = results.find(x => x.id === singleMatch && x.level !== '放弃');
-
-  let html = '';
-
-  if(mains.length >= 2){
-    html += `<div><span class="tag green">主线</span>${mains[0].id}${mains[0].pick} × ${mains[1].id}${mains[1].pick}</div><div class="small">评分 ${mains[0].score}/${mains[1].score}</div><div class="divider"></div>`;
-  } else {
-    html += `<div><span class="tag red">主线不足</span>今日主线不够强，建议降级思路</div><div class="divider"></div>`;
-  }
-
-  if(gains.length){
-    html += `<div><span class="tag yellow">增强</span>${gains.map(x=>`${x.id}${x.pick}`).join('；')}</div><div class="divider"></div>`;
-  }
-
-  if(defense.length){
-    html += `<div><span class="tag yellow">防守</span>${defense[0].id}${defense[0].pick}</div><div class="divider"></div>`;
-  }
-
-  if(single){
-    html += `<div><span class="tag blue">单关场</span>${single.id}${single.pick}</div><div class="divider"></div>`;
-  }
-
-  html += `<div>预算分配：主线 <b>${bankroll.mainPool}</b> 元｜防守/利润 <b>${bankroll.sidePool}</b> 元</div>`;
-  return html;
-}
-
-function renderMatches(results){
-  const el = document.getElementById('matchList');
-  el.innerHTML = results.map(m => `
-    <div class="match">
-      <div class="top">
-        <div>
-          <div class="name">${m.id} ${m.home} vs ${m.away}</div>
-          <div class="small">${m.league || ''}</div>
-        </div>
-        <div class="tag ${m.riskColor}">${m.level}</div>
-      </div>
-      <div class="divider"></div>
-      <div>推荐：<b>${m.pick}</b> ｜ 评分：<b>${m.score}</b></div>
-      <div class="small">概率：胜 ${m.probs.win}% ｜ 平 ${m.probs.draw}% ｜ 负 ${m.probs.lose}%</div>
-      <div class="small">备注：${m.note || '无'}</div>
-      <div class="small">建议：${m.advice}</div>
-    </div>
-  `).join('');
-}
-
-function renderCombos(plans){
-  const el = document.getElementById('comboList');
-  if(!plans.length){
-    el.innerHTML = '暂无建议';
-    return;
-  }
-  el.innerHTML = plans.map(p => `
-    <div class="match">
-      <div><b>${p.type}</b></div>
-      <div>${p.text}</div>
-      <div class="small">建议金额：${p.amount} 元</div>
-    </div>
-  `).join('');
-}
-
-function executeAnalysis(dataset){
-  const budget = parseFloat(document.getElementById('budget').value || '200');
-  const singleMatch = document.getElementById('singleMatch').value.trim();
-
-  const results = dataset.map(m => analyzeMatch(m, singleMatch))
-    .sort((a,b) => b.score - a.score);
-
-  const bankroll = allocateBankroll(results, budget, singleMatch);
-
-  document.getElementById('kpiBudget').textContent = budget;
-  document.getElementById('kpiMain').textContent = bankroll.mainPool;
-  document.getElementById('kpiDefense').textContent = bankroll.sidePool;
-
-  document.getElementById('summary').innerHTML = renderSummary(results, bankroll, singleMatch);
-  renderMatches(results);
-  renderCombos(bankroll.plans);
-}
-
-function runAnalysis(){
+async function loadData(){
   try{
-    const dataset = JSON.parse(document.getElementById('dataset').value);
-    executeAnalysis(dataset);
-    document.getElementById('fetchStatus').textContent = '当前状态：已使用手动数据分析';
+    let res = await fetch("./data/odds.json?t="+Date.now())
+    let data = await res.json()
+
+    matches = data.matches || []
+
+    document.getElementById("status").innerHTML =
+      "✔ 已加载 (" + data.updated_at + ")"
+
+    analyze()
+
   }catch(e){
-    document.getElementById('summary').innerHTML = '<span class="red">数据格式错误，请检查 JSON</span>';
-    document.getElementById('matchList').innerHTML = '';
-    document.getElementById('comboList').innerHTML = '';
-    document.getElementById('fetchStatus').textContent = '当前状态：手动数据格式错误';
+    document.getElementById("status").innerHTML = "❌ 读取失败"
   }
 }
 
-async function fetchOdds(){
-  const statusEl = document.getElementById('fetchStatus');
+function analyze(){
 
-  try{
-    statusEl.innerText = "当前状态：正在读取后台数据...";
+  let budget = parseFloat(document.getElementById("budget").value)
 
-    const res = await fetch('./data/odds.json?v=' + Date.now());
-    if(!res.ok) throw new Error("读取失败");
+  let main = []
+  let sub = []
+  let risk = []
 
-    const data = await res.json();
-    if(!data.matches || !Array.isArray(data.matches)){
-      throw new Error("数据格式不对");
+  matches.forEach(m=>{
+
+    let min = Math.min(m.homeOdds,m.drawOdds,m.awayOdds)
+
+    if(min < 1.5){
+      main.push({...m, pick:getPick(m)})
+    }
+    else if(min < 2.2){
+      sub.push({...m, pick:getPick(m)})
+    }
+    else{
+      risk.push({...m, pick:getPick(m)})
     }
 
-    document.getElementById('dataset').value =
-      JSON.stringify(data.matches, null, 2);
+  })
 
-    executeAnalysis(data.matches);
+  let html = ""
 
-    statusEl.innerText =
-      "当前状态：已自动加载后台数据（" + (data.updated_at || "无时间") + "）";
-  }catch(err){
-    statusEl.innerText = "当前状态：后台数据读取失败，已回退手动模式";
-    runAnalysis();
-  }
+  html += renderBlock("主线", main, "ok")
+  html += renderBlock("增益", sub, "mid")
+  html += renderBlock("放弃", risk, "bad")
+
+  html += renderBet(main, sub, budget)
+
+  document.getElementById("result").innerHTML = html
 }
 
-// 页面打开先读一次
-fetchOdds();
+function getPick(m){
+  if(m.homeOdds < m.drawOdds && m.homeOdds < m.awayOdds) return "胜"
+  if(m.drawOdds < m.homeOdds && m.drawOdds < m.awayOdds) return "平"
+  return "负"
+}
 
-// 每60秒自动刷新一次
-setInterval(fetchOdds, 60000);
+function renderBlock(title,list,cls){
+  if(!list.length) return ""
+
+  let html = `<h4>${title}</h4>`
+
+  list.forEach(m=>{
+    html += `
+    <div>
+      ${m.id} ${m.home} vs ${m.away}
+      <span class="tag ${cls}">${m.pick}</span>
+    </div>`
+  })
+
+  return html
+}
+
+function renderBet(main,sub,budget){
+
+  if(main.length < 1) return ""
+
+  let m = main[0]
+
+  let single = Math.floor(budget*0.5)
+  let parlay = Math.floor(budget*0.3)
+  let hedge = budget - single - parlay
+
+  let html = "<hr><h4>💰 实战建议</h4>"
+
+  html += `
+  单关：${m.id} ${m.pick}（${single}元）<br>
+  2串1：${main.slice(0,2).map(x=>x.id+x.pick).join("+")}（${parlay}元）<br>
+  防守：${m.id} 反方向（${hedge}元）
+  `
+
+  return html
+}
+
+setInterval(loadData,30000)
+
+loadData()
+
 </script>
+
 </body>
 </html>
