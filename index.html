@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>投注助手 V6（整合版）</title>
+<title>投注助手 V7（接口预留版）</title>
 <style>
   :root{
     --bg:#0b1220;
@@ -71,13 +71,16 @@
     border:none;
     border-radius:12px;
     padding:14px;
-    font-size:17px;
+    font-size:16px;
     font-weight:700;
     background:var(--blue);
     color:#fff;
   }
   .btn.secondary{
     background:#26354f;
+  }
+  .btn.warn{
+    background:#8b5cf6;
   }
   .grid{
     display:grid;
@@ -117,6 +120,7 @@
   .tag.green{background:rgba(74,222,128,.15); color:var(--green)}
   .tag.yellow{background:rgba(250,204,21,.15); color:var(--yellow)}
   .tag.red{background:rgba(248,113,113,.15); color:var(--red)}
+  .tag.blue{background:rgba(74,124,255,.15); color:#a5bfff}
   .match{
     background:var(--panel2);
     border-radius:14px;
@@ -152,18 +156,29 @@
 <body>
 <div class="app">
 
-  <div class="title">🔥 投注助手 V6（整合版）</div>
-  <div class="sub">多场输入｜自动分析｜风险分层｜2串1建议｜资金分配</div>
+  <div class="title">🔥 投注助手 V7（接口预留版）</div>
+  <div class="sub">自动赔率入口｜手动数据回退｜自动分析｜风险分层｜2串1建议｜资金分配</div>
 
   <div class="card">
     <h3>总控参数</h3>
     <input id="budget" class="input" type="number" value="200" placeholder="总预算，例如 200">
     <input id="singleMatch" class="input" type="text" value="2003" placeholder="单关场编号，例如 2003">
-    <div class="codeHint">预算用于自动分配主线 / 防守 / 利润层。单关场只在你指定的编号上放开利润建议。</div>
+    <div class="codeHint">预算用于自动分配主线 / 防守 / 利润层。单关场只在你指定编号上放开利润建议。</div>
   </div>
 
   <div class="card">
-    <h3>比赛输入</h3>
+    <h3>自动赔率入口</h3>
+    <input id="apiUrl" class="input" type="text" value="" placeholder="填写赔率接口地址（返回 JSON）">
+    <button class="btn warn" onclick="fetchOdds()">自动获取赔率</button>
+    <div class="small" id="fetchStatus">当前状态：未请求</div>
+    <div class="codeHint">
+      接口要求返回 JSON 数组，字段格式与下方手动数据一致。<br>
+      抓取失败时，会自动回退到手动数据。
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>手动比赛数据（回退用）</h3>
     <textarea id="dataset" class="textarea">[
   {"id":"2001","home":"胡拜尔库","away":"利雅得青年","league":"沙特超","homeOdds":1.43,"drawOdds":4.35,"awayOdds":5.00,"note":"诱盘风险"},
   {"id":"2002","home":"马竞","away":"巴萨","league":"欧冠","homeOdds":3.82,"drawOdds":4.50,"awayOdds":1.55,"note":"赔率异常"},
@@ -173,7 +188,7 @@
   {"id":"2006","home":"博卡青年","away":"巴塞罗那","league":"解放者杯","homeOdds":1.26,"drawOdds":4.40,"awayOdds":9.30,"note":"稳胆"},
   {"id":"2007","home":"基多大学","away":"米拉索尔","league":"解放者杯","homeOdds":1.69,"drawOdds":3.40,"awayOdds":4.10,"note":"次稳"}
 ]</textarea>
-    <button class="btn" onclick="runAnalysis()">开始分析</button>
+    <button class="btn" onclick="runAnalysis()">手动数据分析</button>
     <button class="btn secondary" onclick="loadDemo()">恢复默认样例</button>
     <div class="codeHint">格式固定为 JSON。每场至少有：id / home / away / homeOdds / drawOdds / awayOdds / note</div>
   </div>
@@ -226,6 +241,7 @@ const demoData = `[
 
 function loadDemo(){
   document.getElementById('dataset').value = demoData;
+  document.getElementById('fetchStatus').textContent = '当前状态：已恢复默认样例';
 }
 
 function impliedProb(odds){
@@ -254,7 +270,6 @@ function analyzeMatch(m, singleMatch){
 
   let score = round(maxP * 100);
 
-  // 规则修正：尽量把你前面说的 v137.9.1 思路压进本地规则
   const note = (m.note || '');
   const diffHomeAway = Math.abs(m.homeOdds - m.awayOdds);
 
@@ -265,8 +280,8 @@ function analyzeMatch(m, singleMatch){
   if(note.includes('稳胆')) score += 12;
   if(note.includes('次稳')) score += 6;
   if(note.includes('客强但不稳')) score -= 5;
-  if(m.drawOdds < 3.0) score -= 8; // 平赔陷阱
-  if(diffHomeAway < 0.4) score -= 10; // 伪均势盘
+  if(m.drawOdds < 3.0) score -= 8;
+  if(diffHomeAway < 0.4) score -= 10;
   if(score > 90) score = 90;
   if(score < 30) score = 30;
 
@@ -380,7 +395,7 @@ function renderSummary(results, bankroll, singleMatch){
   }
 
   if(single){
-    html += `<div><span class="tag green">单关场</span>${single.id}${single.pick}</div><div class="divider"></div>`;
+    html += `<div><span class="tag blue">单关场</span>${single.id}${single.pick}</div><div class="divider"></div>`;
   }
 
   html += `<div>预算分配：主线 <b>${bankroll.mainPool}</b> 元｜防守/利润 <b>${bankroll.sidePool}</b> 元</div>`;
@@ -422,28 +437,60 @@ function renderCombos(plans){
   `).join('');
 }
 
+function executeAnalysis(dataset){
+  const budget = parseFloat(document.getElementById('budget').value || '200');
+  const singleMatch = document.getElementById('singleMatch').value.trim();
+
+  const results = dataset.map(m => analyzeMatch(m, singleMatch))
+    .sort((a,b) => b.score - a.score);
+
+  const bankroll = allocateBankroll(results, budget, singleMatch);
+
+  document.getElementById('kpiBudget').textContent = budget;
+  document.getElementById('kpiMain').textContent = bankroll.mainPool;
+  document.getElementById('kpiDefense').textContent = bankroll.sidePool;
+
+  document.getElementById('summary').innerHTML = renderSummary(results, bankroll, singleMatch);
+  renderMatches(results);
+  renderCombos(bankroll.plans);
+}
+
 function runAnalysis(){
   try{
     const dataset = JSON.parse(document.getElementById('dataset').value);
-    const budget = parseFloat(document.getElementById('budget').value || '200');
-    const singleMatch = document.getElementById('singleMatch').value.trim();
-
-    const results = dataset.map(m => analyzeMatch(m, singleMatch))
-      .sort((a,b) => b.score - a.score);
-
-    const bankroll = allocateBankroll(results, budget, singleMatch);
-
-    document.getElementById('kpiBudget').textContent = budget;
-    document.getElementById('kpiMain').textContent = bankroll.mainPool;
-    document.getElementById('kpiDefense').textContent = bankroll.sidePool;
-
-    document.getElementById('summary').innerHTML = renderSummary(results, bankroll, singleMatch);
-    renderMatches(results);
-    renderCombos(bankroll.plans);
+    executeAnalysis(dataset);
+    document.getElementById('fetchStatus').textContent = '当前状态：已使用手动数据分析';
   }catch(e){
     document.getElementById('summary').innerHTML = '<span class="red">数据格式错误，请检查 JSON</span>';
     document.getElementById('matchList').innerHTML = '';
     document.getElementById('comboList').innerHTML = '';
+    document.getElementById('fetchStatus').textContent = '当前状态：手动数据格式错误';
+  }
+}
+
+async function fetchOdds(){
+  const apiUrl = document.getElementById('apiUrl').value.trim();
+  if(!apiUrl){
+    document.getElementById('fetchStatus').textContent = '当前状态：未填写接口地址，已回退手动数据';
+    runAnalysis();
+    return;
+  }
+
+  document.getElementById('fetchStatus').textContent = '当前状态：正在请求接口...';
+
+  try{
+    const resp = await fetch(apiUrl);
+    if(!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+
+    if(!Array.isArray(data)) throw new Error('接口返回不是数组');
+
+    document.getElementById('dataset').value = JSON.stringify(data, null, 2);
+    executeAnalysis(data);
+    document.getElementById('fetchStatus').textContent = '当前状态：接口获取成功，已完成分析';
+  }catch(err){
+    document.getElementById('fetchStatus').textContent = '当前状态：接口失败，已回退手动数据';
+    runAnalysis();
   }
 }
 
