@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>投注助手 V4</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>投注助手 V5（智能引擎）</title>
 
 <style>
 body{
@@ -12,142 +12,130 @@ body{
   color:#fff;
   font-family:-apple-system;
 }
-
-.app{
-  max-width:430px;
-  margin:auto;
-  padding:16px;
-}
-
-.title{
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:12px;
-}
-
+.app{max-width:430px;margin:auto;padding:16px}
 .card{
   background:#121a2b;
-  border-radius:14px;
+  border-radius:16px;
   padding:14px;
-  margin-bottom:12px;
+  margin-bottom:14px;
 }
-
+.title{font-size:20px;font-weight:700}
 .input{
   width:100%;
-  padding:12px;
-  margin-top:8px;
+  padding:14px;
   border-radius:10px;
   border:none;
+  margin-top:10px;
+  background:#eee;
   font-size:16px;
 }
-
 .btn{
-  margin-top:12px;
-  background:#3b82f6;
+  margin-top:14px;
+  width:100%;
   padding:14px;
-  text-align:center;
+  border:none;
   border-radius:12px;
-  font-size:16px;
+  background:#4a7cff;
+  color:#fff;
+  font-size:18px;
 }
-
+.result{
+  margin-top:10px;
+  font-size:16px;
+  line-height:1.6;
+}
 .green{color:#4ade80}
-.yellow{color:#facc15}
 .red{color:#f87171}
+.yellow{color:#facc15}
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
-<div class="title">🔥 投注助手 V4（实战版）</div>
+<div class="title">🔥 投注助手 V5（智能决策）</div>
 
 <div class="card">
-<div>输入赔率</div>
-
-<input class="input" id="odds1" placeholder="主胜赔率">
-<input class="input" id="odds2" placeholder="平局赔率">
-<input class="input" id="odds3" placeholder="客胜赔率">
-
-<div class="btn" onclick="analyze()">开始分析</div>
+  <div>输入赔率</div>
+  <input id="home" class="input" placeholder="主胜（如1.85)">
+  <input id="draw" class="input" placeholder="平（如3.20)">
+  <input id="away" class="input" placeholder="客胜（如4.10)">
+  <button class="btn" onclick="analyze()">开始分析</button>
 </div>
 
-<div class="card" id="result">
-等待分析...
+<div class="card">
+  <div class="result" id="output">等待分析...</div>
 </div>
 
 </div>
 
 <script>
-
 function analyze(){
+  let h = parseFloat(document.getElementById("home").value);
+  let d = parseFloat(document.getElementById("draw").value);
+  let a = parseFloat(document.getElementById("away").value);
 
-let o1 = parseFloat(document.getElementById('odds1').value)
-let o2 = parseFloat(document.getElementById('odds2').value)
-let o3 = parseFloat(document.getElementById('odds3').value)
+  if(!h || !d || !a){
+    alert("请输入完整赔率");
+    return;
+  }
 
-if(!o1 || !o2 || !o3){
-  alert("请输入完整赔率")
-  return
+  // ===== 概率计算 =====
+  let ph = 1/h;
+  let pd = 1/d;
+  let pa = 1/a;
+
+  let total = ph + pd + pa;
+
+  ph /= total;
+  pd /= total;
+  pa /= total;
+
+  // ===== 判断逻辑 =====
+  let result = "";
+  let confidence = 0;
+
+  if(ph > 0.5){
+    result = "胜";
+    confidence = ph;
+  }else if(pa > 0.4){
+    result = "负";
+    confidence = pa;
+  }else{
+    result = "平";
+    confidence = pd;
+  }
+
+  // ===== 风险模型 =====
+  let risk = "";
+  if(d < 3.0){
+    risk = "⚠️ 平局陷阱（庄家收割点）";
+  }else if(Math.abs(h - a) < 0.3){
+    risk = "⚠️ 均势盘（高风险）";
+  }else{
+    risk = "✅ 正常盘口";
+  }
+
+  // ===== 投注建议 =====
+  let bet = "";
+  if(confidence > 0.65){
+    bet = "🔥 主推（可单关）";
+  }else if(confidence > 0.55){
+    bet = "🟡 次推（串关）";
+  }else{
+    bet = "❌ 放弃";
+  }
+
+  // ===== 输出 =====
+  document.getElementById("output").innerHTML = `
+  推荐结果：<b class="green">${result}</b><br>
+  信心值：${(confidence*100).toFixed(1)}%<br><br>
+
+  风险判断：${risk}<br><br>
+
+  投注建议：<b>${bet}</b>
+  `;
 }
-
-let p1 = 1/o1
-let p2 = 1/o2
-let p3 = 1/o3
-
-let sum = p1+p2+p3
-
-p1/=sum
-p2/=sum
-p3/=sum
-
-let max = Math.max(p1,p2,p3)
-
-let result = ""
-if(max === p1) result = "胜"
-if(max === p2) result = "平"
-if(max === p3) result = "负"
-
-let score = Math.round(max*100)
-
-// 风险判断
-let risk = ""
-let riskColor = ""
-
-if(score >= 65){
-  risk = "低风险（稳）"
-  riskColor = "green"
-}else if(score >= 55){
-  risk = "中风险"
-  riskColor = "yellow"
-}else{
-  risk = "高风险（不建议单买）"
-  riskColor = "red"
-}
-
-// 投注建议
-let money = Math.round(score * 2)
-
-// 串关建议
-let combo = ""
-if(score >= 65){
-  combo = "适合做串关主线"
-}else if(score >= 55){
-  combo = "可做辅助串关"
-}else{
-  combo = "仅建议防守或放弃"
-}
-
-document.getElementById("result").innerHTML = `
-<div class="${riskColor}">推荐：${result}</div>
-<div>命中率：${score}%</div>
-<div class="${riskColor}">风险：${risk}</div>
-<div>建议下注：${money} 元</div>
-<div>串关建议：${combo}</div>
-`
-
-}
-
 </script>
 
 </body>
