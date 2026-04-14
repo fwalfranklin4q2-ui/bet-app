@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>投注助手 App</title>
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<style>
+:root{--bg:#0b1220;--panel:#121a2b;--line:#23314f;--text:#e8eefc;--muted:#9fb0d3;--blue:#2563eb;--green:#16a34a;--yellow:#d97706;--red:#dc2626}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:linear-gradient(180deg,#0b1220,#101827);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Segoe UI',sans-serif}
+.app{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:92px}
+.top{position:sticky;top:0;background:rgba(11,18,32,.95);backdrop-filter:blur(8px);padding:14px;border-bottom:1px solid var(--line);z-index:3}
+.h1{font-size:20px;font-weight:700}
+.sub{margin-top:6px;color:var(--muted);font-size:12px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:4px 8px;border:1px solid #2a3b61;border-radius:999px;background:#15213a}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px}
+.kpi .v{font-size:18px;font-weight:700}
+.kpi .l{font-size:12px;color:var(--muted)}
+.screen{padding:14px}
+.card{background:linear-gradient(180deg,var(--panel),#17233a);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:16px}
+.item{background:#0f1728;border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.main{font-weight:700}
+.muted{color:var(--muted);font-size:12px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.tag{font-size:12px;padding:3px 8px;border-radius:999px}
+.g{color:#9ff3b9;background:rgba(22,163,74,.16);border:1px solid rgba(22,163,74,.35)}
+.y{color:#ffd39a;background:rgba(217,119,6,.16);border:1px solid rgba(217,119,6,.35)}
+.r{color:#ffb4b4;background:rgba(220,38,38,.16);border:1px solid rgba(220,38,38,.35)}
+.b{color:#a7c6ff;background:rgba(37,99,235,.16);border:1px solid rgba(37,99,235,.35)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{border:none;border-radius:12px;padding:12px;background:#22314f;color:white;font-weight:700}
+.primary{background:linear-gradient(180deg,#1d4ed8,#2563eb)}
+.success{background:linear-gradient(180deg,#15803d,#16a34a)}
+.warn{background:linear-gradient(180deg,#b45309,#d97706)}
+.ghost{background:#0f1728;border:1px solid var(--line)}
+.nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(430px,100%);background:rgba(11,18,32,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.nav button{background:transparent;color:var(--muted);padding:8px 4px;font-size:11px}
+.nav button.active{background:#16233a;color:white}
+.hidden{display:none}
+.order{padding:10px 12px;border-radius:14px;background:#0f1728;border:1px solid var(--line);margin-bottom:8px}
+.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%);background:#111827;border:1px solid var(--line);padding:10px 14px;border-radius:12px;display:none;z-index:4}
+svg{width:100%;height:100%}
+.trendBox{height:110px;background:#0f1728;border:1px solid var(--line);border-radius:16px;padding:8px}
+.small{font-size:11px;color:var(--muted)}
+.input{width:100%;background:#0f1728;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:12px}
+.switch{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#0f1728;border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+.done{outline:2px solid rgba(22,163,74,.55)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="h1">投注助手 App</div>
+    <div class="sub">
+      <span class="chip">模式：竞彩</span>
+      <span class="chip" id="phaseChip">阶段：赛前</span>
+      <span class="chip">单关场：2003</span>
+    </div>
+    <div class="grid">
+      <div class="kpi"><div class="v" id="budgetTotal">2000</div><div class="l">总预算</div></div>
+      <div class="kpi"><div class="v" id="budgetUsed">260</div><div class="l">已用</div></div>
+      <div class="kpi"><div class="v" id="budgetRemain">1740</div><div class="l">剩余</div></div>
+    </div>
+  </div>
+
+  <div id="home" class="screen">
+    <div class="card">
+      <div class="row"><h3>今日总作战卡</h3><span class="tag g">后台联动中</span></div>
+      <div class="item"><div class="main">🟢 主线：2006 胜 × 2007 胜</div><div class="muted">稳胆组合，低风险</div></div>
+      <div class="item"><div class="main">🟡 增益：2006 胜 × 2005 负；2007 胜 × 2005 负</div><div class="muted">收益增强，非主轴</div></div>
+      <div class="item"><div class="main">🛡 防守：2001 胜/平 × 2007 胜</div><div class="muted">2001 诱盘已降级</div></div>
+      <div class="item"><div class="main">🔥 利润：2003 平（单关）</div><div class="muted">唯一单关场，小注高赔</div></div>
+      <div class="btns">
+        <button class="primary" onclick="showTab('orders')">立即下注</button>
+        <button class="ghost" onclick="showTab('trend')">查看走势</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row"><h3>系统状态</h3><span class="tag b" id="systemStatus">正常</span></div>
+      <div class="small">规则校验、风险更新、串关生成、学习回写均已接入前台壳。</div>
+    </div>
+  </div>
+
+  <div id="matches" class="screen hidden">
+    <div class="card">
+      <h3>比赛页</h3>
+      <div class="item"><div class="row"><div class="main">2001 胡拜尔库 vs 利雅得青年</div><span class="tag y">降级</span></div><div class="muted">只允许防守结构</div></div>
+      <div class="item"><div class="row"><div class="main">2002 马竞 vs 巴萨</div><span class="tag r">放弃</span></div><div class="muted">赔率异常，不做主线</div></div>
+      <div class="item"><div class="row"><div class="main">2003 利物浦 vs 巴黎</div><span class="tag b">单关</span></div><div class="muted">唯一红场，小注博平</div></div>
+      <div class="item"><div class="row"><div class="main">2004 南安普顿 vs 布莱克本</div><span class="tag r">放弃</span></div><div class="muted">强队诱盘</div></div>
+      <div class="item"><div class="row"><div class="main">2005 朴茨茅斯 vs 伊普斯维</div><span class="tag y">增益</span></div><div class="muted">客强但不稳</div></div>
+      <div class="item"><div class="row"><div class="main">2006 博卡青年 vs 巴塞罗那</div><span class="tag g">主轴</span></div><div class="muted">稳胆</div></div>
+      <div class="item"><div class="row"><div class="main">2007 基多大学 vs 米拉索尔</div><span class="tag g">主轴</span></div><div class="muted">次稳</div></div>
+    </div>
+  </div>
+
+  <div id="orders" class="screen hidden">
+    <div class="card">
+      <div class="row"><h3>下单页</h3><span class="tag y" id="lockState">未锁单</span></div>
+
+      <div class="order" data-amount="100">
+        <div class="main">① 2006胜 × 2007胜</div>
+        <div class="muted">1注 × 2元 × 50倍 = 100元</div>
+        <div class="btns"><button class="primary" onclick="copyText('2006胜 × 2007胜 100元')">复制</button><button class="success" onclick="markDone(this,100)">标记已下</button></div>
+      </div>
+
+      <div class="order" data-amount="40">
+        <div class="main">② 2006胜 × 2005负</div>
+        <div class="muted">1注 × 2元 × 20倍 = 40元</div>
+        <div class="btns"><button class="primary" onclick="copyText('2006胜 × 2005负 40元')">复制</button><button class="success" onclick="markDone(this,40)">标记已下</button></div>
+      </div>
+
+      <div class="order" data-amount="40">
+        <div class="main">③ 2007胜 × 2005负</div>
+        <div class="muted">1注 × 2元 × 20倍 = 40元</div>
+        <div class="btns"><button class="primary" onclick="copyText('2007胜 × 2005负 40元')">复制</button><button class="success" onclick="markDone(this,40)">标记已下</button></div>
+      </div>
+
+      <div class="order" data-amount="40">
+        <div class="main">④ 2001胜/平 × 2007胜</div>
+        <div class="muted">2注 × 2元 × 10倍 = 40元</div>
+        <div class="btns"><button class="primary" onclick="copyText('2001胜/平 × 2007胜 40元')">复制</button><button class="success" onclick="markDone(this,40)">标记已下</button></div>
+      </div>
+
+      <div class="order" data-amount="40">
+        <div class="main">⑤ 单关：2003 平</div>
+        <div class="muted">1注 × 2元 × 20倍 = 40元</div>
+        <div class="btns"><button class="primary" onclick="copyText('2003 平 40元')">复制</button><button class="success" onclick="markDone(this,40)">标记已下</button></div>
+      </div>
+
+      <div class="btns">
+        <button class="warn" onclick="toggleLock()">锁单 / 解锁</button>
+        <button class="ghost" onclick="resetMarks()">重置标记</button>
+      </div>
+      <div class="muted" style="margin-top:10px">总投入：260元｜全部合规｜已下注会自动保存</div>
+    </div>
+  </div>
+
+  <div id="risk" class="screen hidden">
+    <div class="card">
+      <h3>风控页</h3>
+      <div class="item"><div class="main">2001</div><div class="muted">诱盘已降级，只能防守用</div></div>
+      <div class="item"><div class="main">2002</div><div class="muted">赔率异常，禁止参与</div></div>
+      <div class="item"><div class="main">2003</div><div class="muted">均势盘，只做单关小注</div></div>
+      <div class="item"><div class="main">2004</div><div class="muted">强队诱盘，直接剔除</div></div>
+      <div class="btns"><button class="warn" onclick="setSafeMode()">一键稳健模式</button><button class="ghost" onclick="showTab('home')">返回首页</button></div>
+    </div>
+  </div>
+
+  <div id="trend" class="screen hidden">
+    <div class="card">
+      <div class="row"><h3>走势页</h3><span class="tag b">模拟联动</span></div>
+      <div class="trendBox">
+        <svg viewBox="0 0 300 90" fill="none">
+          <path d="M0 62 C25 55, 40 58, 70 50 S120 38, 150 42 S195 50, 220 36 S260 28, 300 31" stroke="#60a5fa" stroke-width="3"/>
+          <path d="M0 75 C35 72, 50 70, 80 68 S120 62, 150 63 S190 57, 220 55 S260 48, 300 45" stroke="#22c55e" stroke-width="3"/>
+          <path d="M0 28 C35 32, 50 30, 80 36 S120 42, 150 40 S190 44, 220 50 S260 58, 300 54" stroke="#f59e0b" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="small">蓝：主线稳定度｜绿：收益弹性｜橙：风险波动</div>
+      <div class="btns" style="margin-top:10px">
+        <button class="ghost" onclick="showToast('后台更新接口壳已预留：/api/plan /api/risk /api/learn')">查看接口壳</button>
+        <button class="primary" onclick="showToast('走势图为前台壳，后续可接真实数据')">刷新走势</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="review" class="screen hidden">
+    <div class="card">
+      <h3>复盘页</h3>
+      <div class="item"><div class="main">学习指令</div><div class="muted">示例：学习 2003 1-1</div></div>
+      <div class="item"><div class="main">后台学习</div><div class="muted">会回写错误库，但不污染未开赛场</div></div>
+      <div class="btns"><button class="primary" onclick="copyText('学习 2003 1-1')">复制学习指令</button><button class="ghost" onclick="showToast('复盘页为示范壳，后续可接真实记录')">查看说明</button></div>
+    </div>
+  </div>
+
+  <div id="settings" class="screen hidden">
+    <div class="card">
+      <h3>设置</h3>
+      <div class="switch"><span>自动保存已下注</span><span id="saveState">已开启</span></div>
+      <div class="switch"><span>显示走势图</span><span>已开启</span></div>
+      <div class="switch"><span>后台接口壳</span><span>/api/*</span></div>
+      <input id="budgetInput" class="input" type="number" value="2000" min="0" step="2" />
+      <div class="btns" style="margin-top:10px">
+        <button class="primary" onclick="saveBudget()">保存预算</button>
+        <button class="ghost" onclick="showToast('PWA 安装：浏览器菜单 → 添加到主屏幕')">安装说明</button>
+      </div>
+    </div>
+  </div>
+
+<div class="nav">
+  <button id="nav-home" class="active" onclick="showTab('home')">🏠<br>首页</button>
+  <button id="nav-matches" onclick="showTab('matches')">📊<br>比赛</button>
+  <button id="nav-orders" onclick="showTab('orders')">⚡<br>下单</button>
+  <button id="nav-risk" onclick="showTab('risk')">⚠<br>风控</button>
+  <button id="nav-trend" onclick="showTab('trend')">📉<br>走势</button>
+  <button id="nav-settings" onclick="showTab('settings')">⚙️<br>设置</button>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const LS_KEY = 'betting_app_state_v2';
+const defaultState = {
+  budgetTotal: 2000,
+  budgetUsed: 260,
+  budgetRemain: 1740,
+  doneOrders: [],
+  locked: false,
+  safeMode: false
+};
+let state = loadState();
+
+function loadState(){
+  try{
+    return Object.assign({}, defaultState, JSON.parse(localStorage.getItem(LS_KEY) || '{}'));
+  }catch(e){
+    return {...defaultState};
+  }
+}
+function saveState(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+  renderState();
+}
+function renderState(){
+  document.getElementById('budgetTotal').textContent = state.budgetTotal;
+  document.getElementById('budgetUsed').textContent = state.budgetUsed;
+  document.getElementById('budgetRemain').textContent = Math.max(0, state.budgetTotal - state.budgetUsed);
+  document.getElementById('budgetInput').value = state.budgetTotal;
+  document.getElementById('lockState').textContent = state.locked ? '已锁单' : '未锁单';
+  document.getElementById('lockState').className = 'tag ' + (state.locked ? 'r' : 'y');
+  document.getElementById('phaseChip').textContent = state.locked ? '阶段：锁单' : '阶段：赛前';
+  document.getElementById('systemStatus').textContent = state.safeMode ? '稳健模式' : '正常';
+  document.getElementById('systemStatus').className = 'tag ' + (state.safeMode ? 'y' : 'b');
+
+  document.querySelectorAll('#orders .order').forEach((el, idx)=>{
+    const btn = el.querySelector('.success');
+    const done = state.doneOrders.includes(idx);
+    btn.textContent = done ? '已下注' : '标记已下';
+    btn.disabled = done || state.locked;
+    btn.style.background = done ? 'linear-gradient(180deg,#166534,#16a34a)' : 'linear-gradient(180deg,#15803d,#16a34a)';
+    if(done) el.classList.add('done'); else el.classList.remove('done');
+    const copyBtn = el.querySelector('.primary');
+    copyBtn.disabled = state.locked && !done;
+    copyBtn.style.opacity = (state.locked && !done) ? '0.55' : '1';
+  });
+}
+function showTab(name){
+  ['home','matches','orders','risk','trend','review','settings'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.add('hidden');
+    const nav = document.getElementById('nav-'+id);
+    if(nav) nav.classList.remove('active');
+  });
+  document.getElementById(name).classList.remove('hidden');
+  const navBtn = document.getElementById('nav-'+name);
+  if(navBtn) navBtn.classList.add('active');
+}
+function copyText(text){
+  if(navigator.clipboard){ navigator.clipboard.writeText(text); }
+  showToast('已复制：' + text);
+}
+function markDone(btn, amount){
+  if(state.locked){ showToast('已锁单，不能再改'); return; }
+  const orderEl = btn.closest('.order');
+  const index = Array.from(document.querySelectorAll('#orders .order')).indexOf(orderEl);
+  if(!state.doneOrders.includes(index)){
+    state.doneOrders.push(index);
+    state.budgetUsed += amount;
+    saveState();
+    showToast('已标记为已下注');
+  }
+}
+function resetMarks(){
+  state.doneOrders = [];
+  state.budgetUsed = 260;
+  saveState();
+  showToast('已重置下注标记');
+}
+function toggleLock(){
+  state.locked = !state.locked;
+  saveState();
+  showToast(state.locked ? '已锁单：禁止新增操作' : '已解锁');
+}
+function setSafeMode(){
+  state.safeMode = !state.safeMode;
+  saveState();
+  showToast(state.safeMode ? '已进入稳健模式' : '已退出稳健模式');
+}
+function saveBudget(){
+  const v = parseInt(document.getElementById('budgetInput').value || '0', 10);
+  state.budgetTotal = v;
+  saveState();
+  showToast('预算已保存');
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display='block';
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.style.display='none', 1600);
+}
+renderState();
+</script>
+</body>
+</html>

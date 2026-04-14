@@ -1,0 +1,8 @@
+{
+  "name": "投注助手 App",
+  "short_name": "投注助手",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0f172a"
+}
