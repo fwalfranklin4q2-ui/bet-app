@@ -1,0 +1,53 @@
+name: Fetch Odds Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"  # 每10分钟自动跑一次
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉代码
+        uses: actions/checkout@v3
+
+      - name: 写入赔率数据
+        run: |
+          mkdir -p data
+          cat > data/odds.json << 'EOF'
+          {
+            "updated_at": "$(date)",
+            "matches": [
+              {
+                "id": "2006",
+                "home": "博卡青年",
+                "away": "巴塞罗那",
+                "league": "解放者杯",
+                "homeOdds": 1.26,
+                "drawOdds": 4.40,
+                "awayOdds": 9.30,
+                "note": "稳胆"
+              },
+              {
+                "id": "2007",
+                "home": "基多大学",
+                "away": "米拉索尔",
+                "league": "解放者杯",
+                "homeOdds": 1.69,
+                "drawOdds": 3.40,
+                "awayOdds": 4.10,
+                "note": "次稳"
+              }
+            ]
+          }
+          EOF
+
+      - name: 提交更新
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/odds.json
+          git commit -m "update odds data" || echo "no changes"
+          git push
