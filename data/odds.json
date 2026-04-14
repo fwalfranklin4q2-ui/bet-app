@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-14 18:14:50 UTC",
+  "updated_at": "2026-04-14 21:10:36 UTC",
   "matches": [
     {
       "id": "2006",
@@ -10,16 +10,6 @@
       "drawOdds": 4.4,
       "awayOdds": 9.3,
       "note": "稳胆"
-    },
-    {
-      "id": "2007",
-      "home": "基多大学",
-      "away": "米拉索尔",
-      "league": "解放者杯",
-      "homeOdds": 1.69,
-      "drawOdds": 3.4,
-      "awayOdds": 4.1,
-      "note": "次稳"
     }
   ]
 }
