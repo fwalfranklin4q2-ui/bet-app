@@ -1,0 +1,69 @@
+name: Auto Odds
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate odds data
+        run: |
+          mkdir -p data
+          cat > data/odds.json <<'EOF'
+          {
+            "updated_at": "seed",
+            "matches": [
+              {
+                "id": "2006",
+                "home": "博卡青年",
+                "away": "巴塞罗那",
+                "league": "解放者杯",
+                "homeOdds": 1.26,
+                "drawOdds": 4.40,
+                "awayOdds": 9.30,
+                "note": "稳胆"
+              },
+              {
+                "id": "2007",
+                "home": "基多大学",
+                "away": "米拉索尔",
+                "league": "解放者杯",
+                "homeOdds": 1.69,
+                "drawOdds": 3.40,
+                "awayOdds": 4.10,
+                "note": "次稳"
+              }
+            ]
+          }
+          EOF
+
+      - name: Stamp timestamp
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          p = "data/odds.json"
+          with open(p, "r", encoding="utf-8") as f:
+              data = json.load(f)
+          data["updated_at"] = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+          with open(p, "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/odds.json
+          git commit -m "update odds data" || echo "no changes"
+          git push
