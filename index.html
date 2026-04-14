@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>投注助手 V7（接口预留版）</title>
+<title>投注助手 V7.1（一键替换版）</title>
 <style>
   :root{
     --bg:#0b1220;
@@ -16,6 +16,7 @@
     --green:#4ade80;
     --yellow:#facc15;
     --red:#f87171;
+    --purple:#8b5cf6;
   }
   *{box-sizing:border-box}
   body{
@@ -80,7 +81,7 @@
     background:#26354f;
   }
   .btn.warn{
-    background:#8b5cf6;
+    background:var(--purple);
   }
   .grid{
     display:grid;
@@ -156,8 +157,8 @@
 <body>
 <div class="app">
 
-  <div class="title">🔥 投注助手 V7（接口预留版）</div>
-  <div class="sub">自动赔率入口｜手动数据回退｜自动分析｜风险分层｜2串1建议｜资金分配</div>
+  <div class="title">🔥 投注助手 V7.1（一键替换版）</div>
+  <div class="sub">自动读取后台赔率 JSON｜失败回退手动数据｜自动分析｜风险分层｜2串1建议｜资金分配</div>
 
   <div class="card">
     <h3>总控参数</h3>
@@ -168,12 +169,11 @@
 
   <div class="card">
     <h3>自动赔率入口</h3>
-    <input id="apiUrl" class="input" type="text" value="" placeholder="填写赔率接口地址（返回 JSON）">
-    <button class="btn warn" onclick="fetchOdds()">自动获取赔率</button>
-    <div class="small" id="fetchStatus">当前状态：未请求</div>
+    <div class="small" id="fetchStatus">当前状态：页面初始化中...</div>
+    <button class="btn warn" onclick="fetchOdds()">立即读取后台数据</button>
     <div class="codeHint">
-      接口要求返回 JSON 数组，字段格式与下方手动数据一致。<br>
-      抓取失败时，会自动回退到手动数据。
+      默认读取 <b>./data/odds.json</b><br>
+      如果读取失败，会自动回退到手动数据。
     </div>
   </div>
 
@@ -190,7 +190,7 @@
 ]</textarea>
     <button class="btn" onclick="runAnalysis()">手动数据分析</button>
     <button class="btn secondary" onclick="loadDemo()">恢复默认样例</button>
-    <div class="codeHint">格式固定为 JSON。每场至少有：id / home / away / homeOdds / drawOdds / awayOdds / note</div>
+    <div class="codeHint">手动 JSON 是后备方案。接口失败时自动用它继续跑。</div>
   </div>
 
   <div class="card">
@@ -469,33 +469,37 @@ function runAnalysis(){
 }
 
 async function fetchOdds(){
-  const apiUrl = document.getElementById('apiUrl').value.trim();
-  if(!apiUrl){
-    document.getElementById('fetchStatus').textContent = '当前状态：未填写接口地址，已回退手动数据';
-    runAnalysis();
-    return;
-  }
-
-  document.getElementById('fetchStatus').textContent = '当前状态：正在请求接口...';
+  const statusEl = document.getElementById('fetchStatus');
 
   try{
-    const resp = await fetch(apiUrl);
-    if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    const data = await resp.json();
+    statusEl.innerText = "当前状态：正在读取后台数据...";
 
-    if(!Array.isArray(data)) throw new Error('接口返回不是数组');
+    const res = await fetch('./data/odds.json?v=' + Date.now());
+    if(!res.ok) throw new Error("读取失败");
 
-    document.getElementById('dataset').value = JSON.stringify(data, null, 2);
-    executeAnalysis(data);
-    document.getElementById('fetchStatus').textContent = '当前状态：接口获取成功，已完成分析';
+    const data = await res.json();
+    if(!data.matches || !Array.isArray(data.matches)){
+      throw new Error("数据格式不对");
+    }
+
+    document.getElementById('dataset').value =
+      JSON.stringify(data.matches, null, 2);
+
+    executeAnalysis(data.matches);
+
+    statusEl.innerText =
+      "当前状态：已自动加载后台数据（" + (data.updated_at || "无时间") + "）";
   }catch(err){
-    document.getElementById('fetchStatus').textContent = '当前状态：接口失败，已回退手动数据';
+    statusEl.innerText = "当前状态：后台数据读取失败，已回退手动模式";
     runAnalysis();
   }
 }
 
-// 默认先跑一遍
-runAnalysis();
+// 页面打开先读一次
+fetchOdds();
+
+// 每60秒自动刷新一次
+setInterval(fetchOdds, 60000);
 </script>
 </body>
 </html>
