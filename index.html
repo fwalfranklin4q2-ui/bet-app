@@ -1,183 +1,478 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>投注助手 V9（实战版）</title>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>投注助手 V10（防庄版）</title>
 <style>
-body{
-  margin:0;
-  background:#0b1220;
-  color:#fff;
-  font-family:-apple-system;
-}
-.app{
-  max-width:430px;
-  margin:auto;
-  padding:16px;
-}
-.card{
-  background:#121a2b;
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:14px;
-}
-input,textarea{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  margin-bottom:10px;
-  font-size:16px;
-}
-button{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(90deg,#6a5cff,#8f5cff);
-  color:#fff;
-  font-size:16px;
-}
-.tag{
-  padding:2px 8px;
-  border-radius:6px;
-  font-size:12px;
-}
-.ok{background:#1f8f4d;}
-.mid{background:#b88700;}
-.bad{background:#8f2a2a;}
+  :root{
+    --bg:#0b1220;
+    --panel:#121a2b;
+    --panel2:#0f172a;
+    --line:#23314f;
+    --text:#ffffff;
+    --muted:#9ca3af;
+    --blue:#4a7cff;
+    --green:#4ade80;
+    --yellow:#facc15;
+    --red:#f87171;
+    --purple:#8b5cf6;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif;
+  }
+  .app{
+    max-width:430px;
+    margin:auto;
+    padding:16px;
+  }
+  .title{
+    font-size:24px;
+    font-weight:800;
+    margin-bottom:8px;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:14px;
+  }
+  .card{
+    background:var(--panel);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:14px;
+  }
+  .card h3{
+    margin:0 0 10px 0;
+    font-size:18px;
+  }
+  .input{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:12px;
+    font-size:16px;
+    background:#f3f4f6;
+    color:#111827;
+    margin-top:8px;
+  }
+  .btn{
+    width:100%;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-size:16px;
+    font-weight:700;
+    background:linear-gradient(90deg,#6a5cff,#8f5cff);
+    color:#fff;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .kpi{
+    background:var(--panel2);
+    border-radius:14px;
+    padding:14px 12px;
+    text-align:center;
+  }
+  .kpi .v{
+    font-size:22px;
+    font-weight:800;
+  }
+  .kpi .l{
+    margin-top:4px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .tag{
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    margin-left:6px;
+  }
+  .t-green{background:rgba(74,222,128,.15); color:var(--green)}
+  .t-yellow{background:rgba(250,204,21,.15); color:var(--yellow)}
+  .t-red{background:rgba(248,113,113,.15); color:var(--red)}
+  .t-blue{background:rgba(74,124,255,.15); color:#a5bfff}
+  .small{color:var(--muted); font-size:13px}
+  .match{
+    background:var(--panel2);
+    border-radius:14px;
+    padding:12px;
+    margin-top:10px;
+  }
+  .match .top{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:flex-start;
+  }
+  .name{
+    font-weight:700;
+    font-size:16px;
+  }
+  .divider{
+    height:1px;
+    background:#24324d;
+    margin:10px 0;
+  }
+  .warn{
+    color:var(--yellow);
+  }
+  .danger{
+    color:var(--red);
+  }
+  .ok{
+    color:var(--green);
+  }
+  .sectionTitle{
+    font-size:16px;
+    font-weight:800;
+    margin:8px 0;
+  }
 </style>
 </head>
-
 <body>
 <div class="app">
 
-<h2>🔥 投注助手 V9（实战版）</h2>
+  <div class="title">🔥 投注助手 V10（防庄版）</div>
+  <div class="sub">自动赔率｜自动分析｜异动监控｜防庄识别｜资金分配｜止损提示</div>
 
-<div class="card">
-  <b>总预算</b>
-  <input id="budget" value="200">
-</div>
+  <div class="card">
+    <h3>总控参数</h3>
+    <input id="budget" class="input" type="number" value="200" placeholder="总预算">
+    <input id="singleMatch" class="input" type="text" value="2006" placeholder="利润单关场编号">
+    <div class="small" style="margin-top:8px;">单关利润位只在你指定的编号上开启。</div>
+  </div>
 
-<div class="card">
-  <b>自动赔率状态</b>
-  <div id="status">加载中...</div>
-  <button onclick="loadData()">立即读取后台数据</button>
-</div>
+  <div class="card">
+    <h3>自动赔率状态</h3>
+    <div id="status">加载中...</div>
+    <button class="btn" onclick="loadData()">立即读取后台数据</button>
+    <div class="small" style="margin-top:8px;">默认读取 ./data/odds.json，并每30秒自动刷新一次。</div>
+  </div>
 
-<div class="card">
-  <b>分析结果</b>
-  <div id="result">等待分析...</div>
-</div>
+  <div class="card">
+    <h3>总览面板</h3>
+    <div class="grid">
+      <div class="kpi">
+        <div class="v" id="kpiBudget">200</div>
+        <div class="l">总预算</div>
+      </div>
+      <div class="kpi">
+        <div class="v" id="kpiUpdated">--</div>
+        <div class="l">更新时间</div>
+      </div>
+      <div class="kpi">
+        <div class="v" id="kpiMainCount">0</div>
+        <div class="l">主线场数</div>
+      </div>
+      <div class="kpi">
+        <div class="v" id="kpiWarnCount">0</div>
+        <div class="l">风险提示</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>防庄总判断</h3>
+    <div id="overview">等待分析...</div>
+  </div>
+
+  <div class="card">
+    <h3>逐场分析</h3>
+    <div id="matches">等待分析...</div>
+  </div>
+
+  <div class="card">
+    <h3>实战建议</h3>
+    <div id="bets">等待分析...</div>
+  </div>
 
 </div>
 
 <script>
+let currentMatches = [];
+let lastSnapshot = JSON.parse(localStorage.getItem('betapp_odds_snapshot') || '{}');
+let lossStreak = parseInt(localStorage.getItem('betapp_loss_streak') || '0', 10);
 
-let matches = []
+function minOddsSide(m){
+  const min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
+  if(min === m.homeOdds) return '胜';
+  if(min === m.drawOdds) return '平';
+  return '负';
+}
+
+function getBaseScore(m){
+  let min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
+  let score = 40;
+
+  if(min < 1.35) score = 82;
+  else if(min < 1.50) score = 75;
+  else if(min < 1.80) score = 66;
+  else if(min < 2.20) score = 58;
+  else score = 42;
+
+  return score;
+}
+
+function getMovementInfo(m){
+  const prev = lastSnapshot[m.id];
+  if(!prev){
+    return {
+      changed:false,
+      summary:'首次记录',
+      flags:[]
+    };
+  }
+
+  const dw = +(m.homeOdds - prev.homeOdds).toFixed(2);
+  const dd = +(m.drawOdds - prev.drawOdds).toFixed(2);
+  const da = +(m.awayOdds - prev.awayOdds).toFixed(2);
+
+  const flags = [];
+  if(Math.abs(dw) >= 0.08 || Math.abs(dd) >= 0.10 || Math.abs(da) >= 0.10){
+    flags.push('赔率异动');
+  }
+  if(dw < -0.08 && m.homeOdds < 1.55){
+    flags.push('主胜持续降赔');
+  }
+  if(dw > 0.08 && m.homeOdds < 1.70){
+    flags.push('主胜升赔转弱');
+  }
+  if(dd < -0.08 && m.drawOdds < 3.10){
+    flags.push('平赔陷阱增强');
+  }
+
+  return {
+    changed:true,
+    summary:`主${dw > 0 ? '↑' : dw < 0 ? '↓' : '-'}${Math.abs(dw)} 平${dd > 0 ? '↑' : dd < 0 ? '↓' : '-'}${Math.abs(dd)} 客${da > 0 ? '↑' : da < 0 ? '↓' : '-'}${Math.abs(da)}`,
+    flags
+  };
+}
+
+function antiBookieAnalyze(m, singleMatch){
+  const pick = minOddsSide(m);
+  let score = getBaseScore(m);
+  const flags = [];
+  const min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
+  const max = Math.max(m.homeOdds, m.drawOdds, m.awayOdds);
+  const spread = +(max - min).toFixed(2);
+  const movement = getMovementInfo(m);
+  const note = m.note || '';
+
+  if(note.includes('稳胆')) { score += 6; flags.push('样本备注：稳胆'); }
+  if(note.includes('次稳')) { score += 3; flags.push('样本备注：次稳'); }
+  if(note.includes('诱盘')) { score -= 10; flags.push('样本备注：诱盘'); }
+  if(note.includes('异常')) { score -= 10; flags.push('样本备注：赔率异常'); }
+  if(note.includes('均势')) { score -= 8; flags.push('样本备注：均势'); }
+
+  if(spread < 0.45){
+    score -= 12;
+    flags.push('伪均势盘');
+  }
+
+  if(m.drawOdds < 3.0){
+    score -= 10;
+    flags.push('平赔陷阱');
+  }
+
+  if(min < 1.35 && spread < 3.5){
+    score -= 8;
+    flags.push('低赔过热');
+  }
+
+  movement.flags.forEach(f => flags.push(f));
+  if(movement.flags.includes('主胜升赔转弱')) score -= 10;
+  if(movement.flags.includes('平赔陷阱增强')) score -= 8;
+  if(movement.flags.includes('主胜持续降赔')) score += 3;
+
+  if(lossStreak >= 2){
+    score -= 8;
+    flags.push('止损模式');
+  }
+
+  if(score > 90) score = 90;
+  if(score < 25) score = 25;
+
+  let level = '放弃';
+  let cls = 't-red';
+  let advice = '不建议介入';
+
+  if(score >= 74){
+    level = '主线';
+    cls = 't-green';
+    advice = '可做主线';
+  }else if(score >= 60){
+    level = '增益';
+    cls = 't-yellow';
+    advice = '可做辅助串关';
+  }else if(score >= 45){
+    level = '防守';
+    cls = 't-blue';
+    advice = '只能小注防守';
+  }
+
+  if(m.id === singleMatch && level !== '放弃'){
+    advice += '｜可做利润单';
+  }
+
+  return {
+    ...m,
+    pick,
+    score,
+    level,
+    cls,
+    flags,
+    advice,
+    movement
+  };
+}
+
+function renderOverview(results){
+  const mains = results.filter(x => x.level === '主线');
+  const warns = results.filter(x => x.flags.length > 0);
+
+  let html = '';
+  if(lossStreak >= 2){
+    html += `<div class="danger">⚠️ 当前止损模式：连续错单计数 ${lossStreak}，建议缩仓。</div><div class="divider"></div>`;
+  }
+
+  if(!mains.length){
+    html += `<div class="danger">今日无合格主线，建议以观察或小注防守为主。</div>`;
+    return html;
+  }
+
+  html += `<div class="ok">今日主线：${mains.map(x => `${x.id}${x.pick}`).join('；')}</div>`;
+  if(warns.length){
+    html += `<div class="warn" style="margin-top:8px;">风险场：${warns.map(x => x.id).join('、')}</div>`;
+  }
+  return html;
+}
+
+function renderMatches(results){
+  return results.map(m => `
+    <div class="match">
+      <div class="top">
+        <div>
+          <div class="name">${m.id} ${m.home} vs ${m.away}</div>
+          <div class="small">${m.league || ''}</div>
+        </div>
+        <div><span class="tag ${m.cls}">${m.level}</span></div>
+      </div>
+      <div class="divider"></div>
+      <div>推荐：<b>${m.pick}</b> ｜ 评分：<b>${m.score}</b></div>
+      <div class="small">赔率：胜 ${m.homeOdds} ｜ 平 ${m.drawOdds} ｜ 负 ${m.awayOdds}</div>
+      <div class="small">变化：${m.movement.summary}</div>
+      <div class="small">建议：${m.advice}</div>
+      ${m.flags.length ? `<div class="small" style="margin-top:6px;">提示：${m.flags.join('｜')}</div>` : `<div class="small" style="margin-top:6px;">提示：无明显风险</div>`}
+    </div>
+  `).join('');
+}
+
+function renderBets(results, budget, singleMatch){
+  const mains = results.filter(x => x.level === '主线').slice(0,2);
+  const gains = results.filter(x => x.level === '增益').slice(0,2);
+  const defense = results.filter(x => x.level === '防守').slice(0,1);
+  const single = results.find(x => x.id === singleMatch && x.level !== '放弃');
+
+  let html = '';
+
+  if(!mains.length){
+    return `<div class="danger">今日主线不足，建议空仓或只做极小防守。</div>`;
+  }
+
+  const singleAmt = Math.floor(budget * 0.5);
+  const comboAmt = Math.floor(budget * 0.3);
+  const hedgeAmt = budget - singleAmt - comboAmt;
+
+  html += `<div class="sectionTitle">💰 资金分配</div>`;
+  html += `<div>单关主线：${mains[0].id} ${mains[0].pick}（${singleAmt}元）</div>`;
+
+  if(mains.length >= 2){
+    html += `<div>2串1主线：${mains[0].id}${mains[0].pick} + ${mains[1].id}${mains[1].pick}（${comboAmt}元）</div>`;
+  }else if(gains.length){
+    html += `<div>2串1增强：${mains[0].id}${mains[0].pick} + ${gains[0].id}${gains[0].pick}（${comboAmt}元）</div>`;
+  }else{
+    html += `<div>2串1：今日不建议强行凑单</div>`;
+  }
+
+  if(defense.length){
+    html += `<div>防守位：${defense[0].id} ${defense[0].pick}（${hedgeAmt}元）</div>`;
+  }else{
+    html += `<div>防守位：主线反方向小防（${hedgeAmt}元）</div>`;
+  }
+
+  if(single){
+    html += `<div style="margin-top:8px;">利润单：${single.id} ${single.pick}（建议从防守位里拆小额）</div>`;
+  }
+
+  html += `<div class="divider"></div>`;
+  html += `<div class="sectionTitle">🛡 防庄提醒</div>`;
+  html += `<div class="small">遇到“平赔低 / 低赔过热 / 均势盘 / 异动升赔”时，宁可降级，不要硬上主线。</div>`;
+
+  return html;
+}
+
+function updateSnapshot(matches){
+  const next = {};
+  matches.forEach(m => {
+    next[m.id] = {
+      homeOdds:m.homeOdds,
+      drawOdds:m.drawOdds,
+      awayOdds:m.awayOdds
+    };
+  });
+  localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
+  lastSnapshot = next;
+}
 
 async function loadData(){
   try{
-    let res = await fetch("./data/odds.json?t="+Date.now())
-    let data = await res.json()
+    const res = await fetch('./data/odds.json?v=' + Date.now());
+    const data = await res.json();
+    currentMatches = data.matches || [];
 
-    matches = data.matches || []
+    document.getElementById('status').innerHTML = `✔ 已加载（${data.updated_at || '无时间'}）`;
+    document.getElementById('kpiUpdated').textContent = (data.updated_at || '--').slice(11,16) || '--';
 
-    document.getElementById("status").innerHTML =
-      "✔ 已加载 (" + data.updated_at + ")"
-
-    analyze()
-
+    analyze();
+    updateSnapshot(currentMatches);
   }catch(e){
-    document.getElementById("status").innerHTML = "❌ 读取失败"
+    document.getElementById('status').innerHTML = '❌ 后台数据读取失败';
   }
 }
 
 function analyze(){
+  const budget = parseFloat(document.getElementById('budget').value || '200');
+  const singleMatch = document.getElementById('singleMatch').value.trim();
 
-  let budget = parseFloat(document.getElementById("budget").value)
+  const results = currentMatches.map(m => antiBookieAnalyze(m, singleMatch))
+    .sort((a,b) => b.score - a.score);
 
-  let main = []
-  let sub = []
-  let risk = []
+  document.getElementById('kpiBudget').textContent = budget;
+  document.getElementById('kpiMainCount').textContent = results.filter(x => x.level === '主线').length;
+  document.getElementById('kpiWarnCount').textContent = results.filter(x => x.flags.length > 0).length;
 
-  matches.forEach(m=>{
-
-    let min = Math.min(m.homeOdds,m.drawOdds,m.awayOdds)
-
-    if(min < 1.5){
-      main.push({...m, pick:getPick(m)})
-    }
-    else if(min < 2.2){
-      sub.push({...m, pick:getPick(m)})
-    }
-    else{
-      risk.push({...m, pick:getPick(m)})
-    }
-
-  })
-
-  let html = ""
-
-  html += renderBlock("主线", main, "ok")
-  html += renderBlock("增益", sub, "mid")
-  html += renderBlock("放弃", risk, "bad")
-
-  html += renderBet(main, sub, budget)
-
-  document.getElementById("result").innerHTML = html
+  document.getElementById('overview').innerHTML = renderOverview(results);
+  document.getElementById('matches').innerHTML = renderMatches(results);
+  document.getElementById('bets').innerHTML = renderBets(results, budget, singleMatch);
 }
 
-function getPick(m){
-  if(m.homeOdds < m.drawOdds && m.homeOdds < m.awayOdds) return "胜"
-  if(m.drawOdds < m.homeOdds && m.drawOdds < m.awayOdds) return "平"
-  return "负"
-}
+document.getElementById('budget').addEventListener('input', analyze);
+document.getElementById('singleMatch').addEventListener('input', analyze);
 
-function renderBlock(title,list,cls){
-  if(!list.length) return ""
-
-  let html = `<h4>${title}</h4>`
-
-  list.forEach(m=>{
-    html += `
-    <div>
-      ${m.id} ${m.home} vs ${m.away}
-      <span class="tag ${cls}">${m.pick}</span>
-    </div>`
-  })
-
-  return html
-}
-
-function renderBet(main,sub,budget){
-
-  if(main.length < 1) return ""
-
-  let m = main[0]
-
-  let single = Math.floor(budget*0.5)
-  let parlay = Math.floor(budget*0.3)
-  let hedge = budget - single - parlay
-
-  let html = "<hr><h4>💰 实战建议</h4>"
-
-  html += `
-  单关：${m.id} ${m.pick}（${single}元）<br>
-  2串1：${main.slice(0,2).map(x=>x.id+x.pick).join("+")}（${parlay}元）<br>
-  防守：${m.id} 反方向（${hedge}元）
-  `
-
-  return html
-}
-
-setInterval(loadData,30000)
-
-loadData()
-
+setInterval(loadData, 30000);
+loadData();
 </script>
-
 </body>
 </html>
