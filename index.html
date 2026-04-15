@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>投注助手 V137.9.1</title>
+<title>投注助手 V137.9.2</title>
 <style>
   :root{
     --bg:#07101d;
@@ -22,6 +22,7 @@
     --cyan:#22d3ee;
     --shadow:0 10px 28px rgba(0,0,0,.22);
   }
+
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
@@ -30,28 +31,31 @@
     color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif;
   }
+
   .app{
     max-width:430px;
     margin:0 auto;
-    padding:14px 14px 100px;
+    padding:14px 14px 104px;
   }
+
   .hero{
-    background:linear-gradient(135deg,rgba(96,165,250,.20),rgba(139,92,246,.18),rgba(34,211,238,.10));
+    background:linear-gradient(135deg,rgba(96,165,250,.22),rgba(139,92,246,.18),rgba(34,211,238,.12));
     border:1px solid rgba(255,255,255,.06);
     border-radius:24px;
     padding:18px 16px;
     margin-bottom:14px;
     box-shadow:var(--shadow);
-    overflow:hidden;
     position:relative;
+    overflow:hidden;
+    scroll-margin-top:16px;
   }
   .hero::after{
     content:"";
     position:absolute;
-    right:-30px;
-    top:-20px;
-    width:120px;
-    height:120px;
+    right:-34px;
+    top:-22px;
+    width:126px;
+    height:126px;
     background:rgba(255,255,255,.05);
     border-radius:50%;
   }
@@ -82,6 +86,7 @@
     color:#eef4ff;
     backdrop-filter:blur(6px);
   }
+
   .card{
     background:linear-gradient(180deg,var(--panel) 0%,#0f1729 100%);
     border:1px solid rgba(255,255,255,.05);
@@ -91,6 +96,7 @@
     box-shadow:var(--shadow);
     scroll-margin-top:16px;
   }
+
   .section-title{
     font-size:20px;
     font-weight:900;
@@ -103,6 +109,7 @@
     line-height:1.5;
     margin-bottom:10px;
   }
+
   .grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -135,6 +142,47 @@
     font-size:12px;
     color:var(--muted);
   }
+
+  .core-card{
+    background:linear-gradient(135deg,rgba(74,124,255,.18),rgba(139,92,246,.12));
+    border:1px solid rgba(123,92,255,.24);
+    border-radius:18px;
+    padding:14px;
+    margin-top:10px;
+  }
+  .core-title{
+    font-size:15px;
+    font-weight:900;
+    margin-bottom:8px;
+  }
+
+  .featured-wrap{
+    display:grid;
+    gap:10px;
+  }
+  .featured-card{
+    background:linear-gradient(135deg,rgba(74,222,128,.12),rgba(96,165,250,.08));
+    border:1px solid rgba(74,222,128,.18);
+    border-radius:18px;
+    padding:14px;
+  }
+  .featured-head{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:flex-start;
+  }
+  .featured-title{
+    font-size:16px;
+    font-weight:900;
+    line-height:1.35;
+  }
+  .featured-sub{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:6px;
+  }
+
   .input,.textarea,.select{
     width:100%;
     border:none;
@@ -150,6 +198,7 @@
     resize:vertical;
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
   }
+
   .btn{
     width:100%;
     margin-top:10px;
@@ -160,7 +209,9 @@
     font-weight:900;
     color:#fff;
     background:linear-gradient(90deg,#5977ff,#8a5cff);
+    transition:transform .14s ease, opacity .14s ease;
   }
+  .btn:active{transform:scale(.985)}
   .btn.secondary{background:linear-gradient(90deg,#334155,#3f4d61)}
   .btn.blue{background:linear-gradient(90deg,#1d4ed8,#2563eb)}
   .btn.green{background:linear-gradient(90deg,#166534,#16a34a)}
@@ -171,18 +222,7 @@
     gap:8px;
     margin-top:10px;
   }
-  .core-card{
-    background:linear-gradient(135deg,rgba(74,124,255,.18),rgba(139,92,246,.12));
-    border:1px solid rgba(123,92,255,.24);
-    border-radius:18px;
-    padding:14px;
-    margin-top:8px;
-  }
-  .core-title{
-    font-size:15px;
-    font-weight:900;
-    margin-bottom:8px;
-  }
+
   .small{
     color:var(--muted);
     font-size:13px;
@@ -193,6 +233,7 @@
     background:var(--line);
     margin:10px 0;
   }
+
   .chip{
     display:inline-block;
     padding:8px 12px;
@@ -203,12 +244,35 @@
     color:#c7d9ff;
     border:1px solid transparent;
     cursor:pointer;
+    transition:all .15s ease;
   }
   .chip.active{
     border-color:var(--green);
     color:#fff;
     background:rgba(74,222,128,.12);
   }
+
+  .status-bar{
+    width:100%;
+    height:10px;
+    border-radius:999px;
+    background:#10192c;
+    overflow:hidden;
+    margin-top:10px;
+  }
+  .status-fill{
+    height:100%;
+    width:0%;
+    transition:width .25s ease;
+    background:linear-gradient(90deg,var(--green),#22c55e);
+  }
+  .status-fill.warn{
+    background:linear-gradient(90deg,var(--yellow),#f59e0b);
+  }
+  .status-fill.danger{
+    background:linear-gradient(90deg,var(--red),#dc2626);
+  }
+
   .match{
     background:linear-gradient(180deg,var(--panel3) 0%,#0f182d 100%);
     border:1px solid rgba(255,255,255,.04);
@@ -239,6 +303,26 @@
     color:var(--muted);
     margin-top:4px;
   }
+  .match-toggle{
+    margin-top:10px;
+    border:none;
+    background:#152238;
+    color:#dbeafe;
+    border-radius:12px;
+    padding:10px 12px;
+    font-size:13px;
+    font-weight:800;
+    width:100%;
+  }
+  .match-detail{
+    overflow:hidden;
+    max-height:0;
+    transition:max-height .24s ease;
+  }
+  .match.open .match-detail{
+    max-height:360px;
+  }
+
   .tag{
     display:inline-block;
     padding:6px 10px;
@@ -251,6 +335,7 @@
   .t-yellow{background:rgba(250,204,21,.15);color:var(--yellow)}
   .t-red{background:rgba(248,113,113,.15);color:var(--red)}
   .t-blue{background:rgba(96,165,250,.15);color:var(--blue)}
+
   .odds-row{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
@@ -273,12 +358,14 @@
     font-size:18px;
     font-weight:900;
   }
+
   .archiveItem{
     background:var(--panel3);
     border-radius:14px;
     padding:12px;
     margin-top:8px;
   }
+
   .chartWrap{
     background:var(--panel3);
     border-radius:14px;
@@ -290,10 +377,11 @@
     height:180px;
     display:block;
   }
+
   .ok{color:var(--green)}
   .warn{color:var(--yellow)}
   .danger{color:var(--red)}
-  .hidden{display:none}
+
   .bottom-nav{
     position:fixed;
     left:50%;
@@ -317,6 +405,7 @@
     padding:6px 0;
     cursor:pointer;
     border-radius:16px;
+    transition:all .15s ease;
   }
   .nav-item b{
     display:block;
@@ -325,7 +414,7 @@
   }
   .nav-item.active{
     color:#fff;
-    background:rgba(255,255,255,.05);
+    background:rgba(255,255,255,.06);
   }
 </style>
 </head>
@@ -333,8 +422,8 @@
 <div class="app">
 
   <section id="sec-home" class="hero">
-    <div class="hero-title">🔥 投注助手 V137.9.1</div>
-    <div class="hero-sub">最终整合版｜自动赔率｜每日比赛池｜自动分析｜防庄识别｜归档｜盈亏｜止损</div>
+    <div class="hero-title">🔥 投注助手 V137.9.2</div>
+    <div class="hero-sub">收尾优化版｜自动赔率｜每日比赛池｜自动分析｜防庄识别｜归档｜盈亏｜止损</div>
     <div class="hero-pills">
       <div class="pill">自动赔率</div>
       <div class="pill">主线分层</div>
@@ -358,6 +447,13 @@
     <div class="core-card">
       <div class="core-title">🎯 今日核心判断</div>
       <div id="overview">等待分析...</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">今日主推</div>
+    <div class="featured-wrap" id="featuredPicks">
+      <div class="small">等待分析...</div>
     </div>
   </section>
 
@@ -394,6 +490,9 @@
   <section id="sec-risk" class="card">
     <div class="section-title">风控面板</div>
     <div id="riskPanel">等待分析...</div>
+    <div class="status-bar">
+      <div id="riskFill" class="status-fill"></div>
+    </div>
     <div class="rowBtns">
       <button class="btn green" onclick="markLastBet('win')">最近一单：红了</button>
       <button class="btn red" onclick="markLastBet('loss')">最近一单：黑了</button>
@@ -475,7 +574,7 @@ function resetStats(){
   saveStats();
 }
 
-function renderTopStats(mainCount=0,warnCount=0){
+function renderTopStats(mainCount=0, warnCount=0){
   const total = stats.win + stats.loss;
   const rate = total ? Math.round((stats.win / total) * 100) : 0;
   const totalProfit = profitBook.reduce((s,x)=>s+x.amount,0);
@@ -485,6 +584,7 @@ function renderTopStats(mainCount=0,warnCount=0){
   document.getElementById('kpiMainCount').textContent = mainCount;
   document.getElementById('kpiWarnCount').textContent = warnCount;
 }
+
 function renderRiskPanel(){
   const total = stats.win + stats.loss;
   const rate = total ? Math.round((stats.win / total) * 100) : 0;
@@ -495,12 +595,20 @@ function renderRiskPanel(){
     <div class="pill">命中率 ${rate}%</div>
     <div class="divider"></div>
   `;
+  const fill = document.getElementById('riskFill');
+  fill.className = 'status-fill';
+
   if(stats.streak >= 3){
     html += `<div class="danger">⛔ 连错 ${stats.streak} 场，建议停手。</div>`;
+    fill.classList.add('danger');
+    fill.style.width = '100%';
   }else if(stats.streak === 2){
     html += `<div class="warn">⚠️ 连错 2 场，进入止损模式：预算减半。</div>`;
+    fill.classList.add('warn');
+    fill.style.width = '66%';
   }else{
     html += `<div class="ok">✅ 正常模式，可按系统建议执行。</div>`;
+    fill.style.width = '33%';
   }
   document.getElementById('riskPanel').innerHTML = html;
 }
@@ -554,12 +662,14 @@ function mergeManualMatches(){
     document.getElementById('status').innerHTML = '❌ 补录格式错误';
   }
 }
+
 function rebuildMatchPool(){
   const map = {};
   backendMatches.forEach(m => map[m.id] = m);
   manualMatches.forEach(m => map[m.id] = m);
   currentMatches = Object.values(map);
 }
+
 function renderPool(){
   const box = document.getElementById('poolChips');
   if(!currentMatches.length){
@@ -692,9 +802,51 @@ function renderOverview(results){
   return html;
 }
 
+function renderFeatured(results){
+  const mains = results.filter(x=>x.level==='主线').slice(0,2);
+  const gains = results.filter(x=>x.level==='增益').slice(0,1);
+  const box = document.getElementById('featuredPicks');
+
+  if(!results.length){
+    box.innerHTML = `<div class="small">等待选择比赛后生成主推。</div>`;
+    return;
+  }
+
+  let html = '';
+  mains.forEach((m, idx)=>{
+    html += `
+      <div class="featured-card">
+        <div class="featured-head">
+          <div>
+            <div class="featured-title">${idx === 0 ? '主推一号' : '主推二号'}：${m.id} ${m.home} vs ${m.away}</div>
+            <div class="featured-sub">推荐 ${m.pick} ｜ 评分 ${m.score} ｜ ${m.league || ''}</div>
+          </div>
+          <span class="tag ${m.cls}">${m.level}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  if(!mains.length && gains.length){
+    html += `
+      <div class="featured-card">
+        <div class="featured-head">
+          <div>
+            <div class="featured-title">今日无主线，建议仅小注观察 ${gains[0].id}</div>
+            <div class="featured-sub">推荐 ${gains[0].pick} ｜ 评分 ${gains[0].score}</div>
+          </div>
+          <span class="tag ${gains[0].cls}">${gains[0].level}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  box.innerHTML = html || `<div class="small">暂无主推。</div>`;
+}
+
 function renderMatches(results){
-  return results.map(m=>`
-    <div class="match">
+  return results.map((m, i)=>`
+    <div class="match ${i < 2 ? 'open' : ''}" id="match-card-${m.id}">
       <div class="match-top">
         <div>
           <div class="match-id">${m.id}</div>
@@ -703,18 +855,30 @@ function renderMatches(results){
         </div>
         <span class="tag ${m.cls}">${m.level}</span>
       </div>
-      <div class="odds-row">
-        <div class="odds-box"><b>胜</b><span>${m.homeOdds}</span></div>
-        <div class="odds-box"><b>平</b><span>${m.drawOdds}</span></div>
-        <div class="odds-box"><b>负</b><span>${m.awayOdds}</span></div>
+
+      <button class="match-toggle" onclick="toggleMatchCard('${m.id}')">${i < 2 ? '收起详情' : '展开详情'}</button>
+
+      <div class="match-detail" id="match-detail-${m.id}">
+        <div class="odds-row">
+          <div class="odds-box"><b>胜</b><span>${m.homeOdds}</span></div>
+          <div class="odds-box"><b>平</b><span>${m.drawOdds}</span></div>
+          <div class="odds-box"><b>负</b><span>${m.awayOdds}</span></div>
+        </div>
+        <div class="divider"></div>
+        <div>推荐：<b>${m.pick}</b> ｜ 评分：<b>${m.score}</b></div>
+        <div class="small">变化：${m.movement.summary}</div>
+        <div class="small">建议：${m.advice}</div>
+        ${m.flags.length ? `<div class="small" style="margin-top:6px;">提示：${m.flags.join('｜')}</div>` : `<div class="small" style="margin-top:6px;">提示：无明显风险</div>`}
       </div>
-      <div class="divider"></div>
-      <div>推荐：<b>${m.pick}</b> ｜ 评分：<b>${m.score}</b></div>
-      <div class="small">变化：${m.movement.summary}</div>
-      <div class="small">建议：${m.advice}</div>
-      ${m.flags.length ? `<div class="small" style="margin-top:6px;">提示：${m.flags.join('｜')}</div>` : `<div class="small" style="margin-top:6px;">提示：无明显风险</div>`}
     </div>
   `).join('');
+}
+
+function toggleMatchCard(id){
+  const card = document.getElementById(`match-card-${id}`);
+  const btn = card.querySelector('.match-toggle');
+  card.classList.toggle('open');
+  btn.textContent = card.classList.contains('open') ? '收起详情' : '展开详情';
 }
 
 function renderBets(results,budget,singleMatch){
@@ -844,9 +1008,79 @@ function recordDayProfit(isWin){
   profitBook.sort((a,b) => a.label.localeCompare(b.label));
   saveProfitBook();
 }
+
 function drawProfitChart(){
   const canvas = document.getElementById('profitChart');
-  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0,0,w,h);
+
+  if(!profitBook.length){
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('暂无盈亏记录', 130, 90);
+    return;
+  }
+
+  const cumulative = [];
+  let sum = 0;
+  for(const item of profitBook){
+    sum += item.amount;
+    cumulative.push({ label:item.label, value:sum });
+  }
+
+  const values = cumulative.map(x => x.value);
+  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 0);
+  const span = (max - min) || 1;
+
+  const left = 30, right = w - 10, top = 15, bottom = h - 25;
+  const zeroY = top + (max / span) * (bottom - top);
+
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(left, zeroY);
+  ctx.lineTo(right, zeroY);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  cumulative.forEach((p, i) => {
+    const x = left + (i * (right - left) / Math.max(cumulative.length - 1, 1));
+    const y = top + ((max - p.value) / span) * (bottom - top);
+    if(i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  cumulative.forEach((p, i) => {
+    const x = left + (i * (right - left) / Math.max(cumulative.length - 1, 1));
+    const y = top + ((max - p.value) / span) * (bottom - top);
+    ctx.fillStyle = p.value >= 0 ? '#4ade80' : '#f87171';
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = '11px sans-serif';
+  ctx.fillText(`最高 ${max}`, 8, 12);
+  ctx.fillText(`最低 ${min}`, 8, h - 8);
+}
+
+function updateSnapshot(matches){
+  const next = {};
+  matches.forEach(m=>{
+    next[m.id] = {homeOdds:m.homeOdds, drawOdds:m.drawOdds, awayOdds:m.awayOdds};
+  });
+  localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
+  lastSnapshot = next;
 }
 
 async function loadData(){
@@ -856,6 +1090,7 @@ async function loadData(){
     backendMatches = data.matches || [];
     document.getElementById('status').innerHTML = `✔ 已加载（${data.updated_at || '无时间'}）`;
     document.getElementById('kpiUpdated').textContent = (data.updated_at || '--').slice(11,16) || '--';
+
     loadSavedManualMatchesSilently();
     loadSelected();
     rebuildMatchPool();
@@ -866,14 +1101,7 @@ async function loadData(){
     document.getElementById('status').innerHTML = '❌ 后台数据读取失败';
   }
 }
-function updateSnapshot(matches){
-  const next = {};
-  matches.forEach(m=>{
-    next[m.id] = {homeOdds:m.homeOdds, drawOdds:m.drawOdds, awayOdds:m.awayOdds};
-  });
-  localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
-  lastSnapshot = next;
-}
+
 function analyze(){
   const budget = parseFloat(document.getElementById('budget').value || '200');
   const singleMatch = document.getElementById('singleMatch').value.trim();
@@ -882,22 +1110,41 @@ function analyze(){
 
   renderTopStats(results.filter(x=>x.level==='主线').length, results.filter(x=>x.flags.length>0).length);
   renderRiskPanel();
+  renderFeatured(results);
   document.getElementById('overview').innerHTML = renderOverview(results);
   document.getElementById('matches').innerHTML = renderMatches(results);
   document.getElementById('bets').innerHTML = renderBets(results,budget,singleMatch);
 }
 
 function bindNav(){
-  const navItems = document.querySelectorAll('.nav-item');
+  const navItems = [...document.querySelectorAll('.nav-item')];
+  const sections = navItems.map(item => document.getElementById(item.dataset.target)).filter(Boolean);
+
   navItems.forEach(item=>{
     item.addEventListener('click', ()=>{
-      navItems.forEach(n=>n.classList.remove('active'));
-      item.classList.add('active');
-      const target = item.dataset.target;
-      const el = document.getElementById(target);
-      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      const target = document.getElementById(item.dataset.target);
+      if(target){
+        target.scrollIntoView({behavior:'smooth', block:'start'});
+      }
     });
   });
+
+  const observer = new IntersectionObserver((entries)=>{
+    const visible = entries
+      .filter(e => e.isIntersecting)
+      .sort((a,b)=>b.intersectionRatio - a.intersectionRatio)[0];
+    if(!visible) return;
+    const id = visible.target.id;
+    navItems.forEach(item=>{
+      item.classList.toggle('active', item.dataset.target === id);
+    });
+  }, {
+    root:null,
+    threshold:[0.25,0.45,0.65],
+    rootMargin:'-10% 0px -55% 0px'
+  });
+
+  sections.forEach(sec => observer.observe(sec));
 }
 
 document.getElementById('budget').addEventListener('input', analyze);
@@ -914,6 +1161,7 @@ document.getElementById('dayLabel').addEventListener('change', ()=>{
 renderTopStats();
 renderRiskPanel();
 renderArchiveOptions();
+drawProfitChart();
 bindNav();
 setInterval(loadData, 30000);
 loadData();
