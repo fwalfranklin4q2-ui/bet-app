@@ -1,0 +1,36 @@
+name: V138 Fetch Odds
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: install deps
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: make data folder
+        run: mkdir -p data
+
+      - name: run fetch
+        run: python scripts/fetch_v138.py
+
+      - name: push result
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@github.com"
+          git add data/odds.json
+          git commit -m "update odds" || echo "no changes"
+          git push
