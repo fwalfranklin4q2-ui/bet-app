@@ -1,0 +1,33 @@
+name: V138 Fetch Odds
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # 每5分钟跑一次
+  workflow_dispatch:        # 手动触发
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 拉代码
+        uses: actions/checkout@v3
+
+      - name: 安装Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: 创建data目录
+        run: mkdir -p data
+
+      - name: 运行爬虫
+        run: python scripts/fetch_v138.py
+
+      - name: 提交数据
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@github.com"
+          git add data/odds.json
+          git commit -m "auto update odds" || echo "no changes"
+          git push
