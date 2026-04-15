@@ -446,7 +446,7 @@
 
     <div class="core-card">
       <div class="core-title">🎯 今日核心判断</div>
-      <div id="overview">等待分析...</div>
+     <div id="homeCoreText">等待分析...</div>
     </div>
   </section>
 
@@ -544,6 +544,7 @@ fetch('data/odds.json')
   .then(data => {
     backendMatches = data.matches || [];
     renderBackendMatches();
+renderHomeCore();
   })
   .catch(err => {
     console.log('加载赔率失败', err);
@@ -620,7 +621,31 @@ function markLastBet(type){
   }
   saveStats();
 }
-function resetStats(){
+function renderHomeCore(){
+  const box = document.getElementById('homeCoreText');
+  if(!box) return;
+
+  if(!backendMatches.length){
+    box.innerHTML = '等待分析...';
+    return;
+  }
+
+  const mainList = backendMatches
+    .filter(m => (m.analysis?.confidence ?? 0) >= 70)
+    .map(m => `${m.id}${m.analysis?.recommend ?? ''}`);
+
+  if(!mainList.length){
+    box.innerHTML = '暂无主线';
+    return;
+  }
+
+  box.innerHTML = `主线：${mainList.join('；')}`;
+}
+    return;
+  }
+
+  box.innerHTML = `主线：${mainList.join('；')}`;
+}
   stats = {win:0, loss:0, streak:0};
   saveStats();
 }
