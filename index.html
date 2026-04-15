@@ -1,77 +1,349 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <title>智能分析系统</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>投注助手 实时看盘版</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root{
+      --bg:#08111f;
+      --panel:#0e1a2f;
+      --panel2:#14233f;
+      --text:#f5f7fb;
+      --muted:#9fb0c9;
+      --line:#223250;
+      --green:#4ade80;
+      --yellow:#facc15;
+      --red:#f87171;
+      --blue:#60a5fa;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      padding:16px;
+      background:linear-gradient(180deg,#07101d,#08162d 35%,#07101d);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    }
+    .wrap{
+      max-width:760px;
+      margin:0 auto;
+    }
+    .card{
+      background:linear-gradient(180deg,var(--panel),#0a1630);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:22px;
+      padding:18px;
+      margin-bottom:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .hero{
+      background:linear-gradient(135deg,#1f3a6d,#201b4f 55%,#0c2a4d);
+    }
+    .title{
+      font-size:22px;
+      font-weight:800;
+      margin:0 0 10px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+    .stat{
+      background:rgba(255,255,255,.04);
+      border-radius:18px;
+      padding:16px;
+      min-height:92px;
+    }
+    .stat-num{
+      font-size:28px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .section-title{
+      font-size:18px;
+      font-weight:800;
+      margin:0 0 12px;
+    }
+    .pill{
+      display:inline-block;
+      padding:6px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      background:rgba(74,222,128,.15);
+      color:var(--green);
+      border:1px solid rgba(74,222,128,.15);
+    }
+    .core-box{
+      background:rgba(126,87,255,.10);
+      border:1px solid rgba(126,87,255,.18);
+      border-radius:18px;
+      padding:16px;
+      margin-top:12px;
+    }
+    .core-text{
+      color:var(--green);
+      font-size:18px;
+      font-weight:800;
+      line-height:1.6;
+    }
+    .match{
+      background:linear-gradient(180deg,#091732,#08142b);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:22px;
+      padding:16px;
+      margin-bottom:14px;
+    }
+    .match-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .match-id{
+      color:#67d2ff;
+      font-size:16px;
+      font-weight:800;
+      margin-bottom:6px;
+    }
+    .match-name{
+      font-size:18px;
+      font-weight:800;
+      line-height:1.4;
+      margin-bottom:6px;
+    }
+    .league{
+      color:var(--muted);
+      font-size:13px;
+    }
+    .odds-row{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+      margin:14px 0;
+    }
+    .odd-box{
+      background:rgba(255,255,255,.04);
+      border-radius:18px;
+      text-align:center;
+      padding:14px 8px;
+    }
+    .odd-label{
+      color:#c6d1e3;
+      font-size:14px;
+      margin-bottom:8px;
+      font-weight:700;
+    }
+    .odd-value{
+      font-size:26px;
+      font-weight:800;
+    }
+    .line{
+      border-top:1px solid var(--line);
+      margin:12px 0;
+    }
+    .meta{
+      color:#dfe7f5;
+      font-size:15px;
+      line-height:1.8;
+    }
+    .muted{
+      color:var(--muted);
+    }
+    .green{color:var(--green)}
+    .yellow{color:var(--yellow)}
+    .red{color:var(--red)}
+    .blue{color:var(--blue)}
+    .small{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .refresh-tip{
+      margin-top:10px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .btn{
+      display:inline-block;
+      border:none;
+      border-radius:14px;
+      padding:10px 14px;
+      font-weight:700;
+      background:var(--panel2);
+      color:var(--text);
+      margin-top:10px;
+    }
+  </style>
 </head>
+<body>
+  <div class="wrap">
 
-<body style="font-family: Arial; padding: 10px;">
+    <section class="card hero">
+      <h1 class="title">🔥 投注助手 实时看盘版</h1>
+      <div class="sub">
+        自动赔率｜自动分析｜主线判断｜风险提示｜自动刷新
+      </div>
 
-  <h2>📊 今日核心判断</h2>
-  <div id="homeCoreText">等待分析...</div>
+      <div class="grid">
+        <div class="stat">
+          <div class="stat-num" id="mainCount">0</div>
+          <div class="muted">主线场数</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="updateTime">--</div>
+          <div class="muted">最后更新时间</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="riskCount">0</div>
+          <div class="muted">风险提示</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="autoRefresh">30s</div>
+          <div class="muted">自动刷新频率</div>
+        </div>
+      </div>
 
-  <h2>📋 比赛分析</h2>
-  <div id="backendList"></div>
+      <div class="core-box">
+        <div class="section-title">🎯 今日核心判断</div>
+        <div id="homeCoreText" class="core-text">等待分析...</div>
+        <div class="refresh-tip" id="refreshTip">数据准备中...</div>
+        <button class="btn" onclick="reloadOdds()">手动刷新</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">📋 比赛分析</div>
+      <div id="backendList">加载中...</div>
+    </section>
+
+  </div>
 
 <script>
 let backendMatches = [];
+let updatedAt = '';
 
-// 🚀 拉取GitHub数据
-fetch('data/odds.json')
-  .then(res => res.json())
-  .then(data => {
-    backendMatches = data.matches || [];
-    renderBackendMatches();
-    renderHomeCore();
-  })
-  .catch(err => {
-    console.log('加载赔率失败', err);
+function riskLevelText(risk){
+  if(risk === '低') return 'green';
+  if(risk === '中' || risk === '中低') return 'yellow';
+  return 'red';
+}
+
+function confidenceColor(c){
+  if(c >= 75) return 'var(--green)';
+  if(c >= 60) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function normalizeLocalTime(utcText){
+  if(!utcText) return '--';
+  const iso = utcText.replace(' UTC','Z').replace(' ','T');
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return utcText;
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${y}-${m}-${day} ${hh}:${mm}`;
+}
+
+function sortMatches(list){
+  return [...list].sort((a,b) => {
+    const ca = a.analysis?.confidence ?? 0;
+    const cb = b.analysis?.confidence ?? 0;
+    return cb - ca;
   });
+}
 
-// 📊 比赛列表
 function renderBackendMatches(){
   const container = document.getElementById('backendList');
   if(!container) return;
 
   if(!backendMatches.length){
-    container.innerHTML = `<div>暂无数据（等待抓取）</div>`;
+    container.innerHTML = `<div class="muted">暂无数据（等待抓取）</div>`;
     return;
   }
 
-  container.innerHTML = backendMatches.map(m => {
+  const sorted = sortMatches(backendMatches);
 
+  container.innerHTML = sorted.map(m => {
     const confidence = m.analysis?.confidence ?? 0;
+    const recommend = m.analysis?.recommend ?? '等待分析';
+    const risk = m.analysis?.risk ?? '--';
+    const tag = m.analysis?.tag ?? '-';
+    const note = m.note ?? '-';
 
-    let color = '#999';
-    if(confidence >= 75) color = '#4ade80';
-    else if(confidence >= 60) color = '#facc15';
-    else color = '#f87171';
+    const isMain = confidence >= 70;
+    const advice = confidence >= 75 ? '可做主线' : confidence >= 60 ? '可参与串关' : '建议放弃';
 
     return `
-      <div style="border:1px solid #ddd;padding:12px;margin:10px 0;border-radius:10px;">
-        <div><b>${m.id}</b> ${m.home} vs ${m.away}</div>
-        <div>赔率：${m.homeOdds} / ${m.drawOdds} / ${m.awayOdds}</div>
-        <div style="color:${color};">
-          推荐：${m.analysis?.recommend ?? '等待分析'}
-          | 信心：${confidence}
-          | 风险：${m.analysis?.risk ?? '--'}
+      <div class="match">
+        <div class="match-top">
+          <div>
+            <div class="match-id">${m.id}</div>
+            <div class="match-name">${m.home} vs ${m.away}</div>
+            <div class="league">${m.league ?? '-'}</div>
+          </div>
+          <div>
+            <span class="pill">${isMain ? '主线' : '观察'}</span>
+          </div>
         </div>
-        <div style="color:#999;">
-          标签：${m.analysis?.tag ?? '-'}
+
+        <div class="odds-row">
+          <div class="odd-box">
+            <div class="odd-label">胜</div>
+            <div class="odd-value">${m.homeOdds}</div>
+          </div>
+          <div class="odd-box">
+            <div class="odd-label">平</div>
+            <div class="odd-value">${m.drawOdds}</div>
+          </div>
+          <div class="odd-box">
+            <div class="odd-label">负</div>
+            <div class="odd-value">${m.awayOdds}</div>
+          </div>
         </div>
+
+        <div class="line"></div>
+
+        <div class="meta">
+          推荐：<b>${recommend}</b>
+          <span class="muted">｜</span>
+          评分：<b style="color:${confidenceColor(confidence)}">${confidence}</b>
+        </div>
+        <div class="meta muted">建议：${advice}</div>
+        <div class="meta muted">风险：<span class="${riskLevelText(risk)}">${risk}</span></div>
+        <div class="meta muted">标签：${tag}</div>
+        <div class="meta muted">备注：${note}</div>
       </div>
     `;
   }).join('');
 }
 
-// 🎯 首页主线
 function renderHomeCore(){
   const box = document.getElementById('homeCoreText');
+  const mainCount = document.getElementById('mainCount');
+  const riskCount = document.getElementById('riskCount');
+  const updateTime = document.getElementById('updateTime');
+  const refreshTip = document.getElementById('refreshTip');
+
   if(!box) return;
 
   if(!backendMatches.length){
     box.innerHTML = '等待分析...';
+    if(mainCount) mainCount.textContent = '0';
+    if(riskCount) riskCount.textContent = '0';
+    if(updateTime) updateTime.textContent = '--';
+    if(refreshTip) refreshTip.textContent = '暂无可用数据';
     return;
   }
 
@@ -79,14 +351,43 @@ function renderHomeCore(){
     .filter(m => (m.analysis?.confidence ?? 0) >= 70)
     .map(m => `${m.id}${m.analysis?.recommend ?? ''}`);
 
-  if(!mainList.length){
-    box.innerHTML = '暂无主线';
-    return;
-  }
+  const riskList = backendMatches.filter(m => {
+    const r = m.analysis?.risk ?? '';
+    return r === '高' || r === '中高';
+  });
 
-  box.innerHTML = `🔥 主线推荐：${mainList.join('；')}`;
+  box.innerHTML = mainList.length
+    ? `🔥 主线推荐：${mainList.join('；')}`
+    : '暂无主线';
+
+  if(mainCount) mainCount.textContent = String(mainList.length);
+  if(riskCount) riskCount.textContent = String(riskList.length);
+  if(updateTime) updateTime.textContent = normalizeLocalTime(updatedAt).slice(11,16) || '--';
+  if(refreshTip) refreshTip.textContent = `最后抓取：${normalizeLocalTime(updatedAt)} ｜ 页面每30秒自动刷新`;
 }
-</script>
 
+function loadOdds(){
+  fetch('data/odds.json?_t=' + Date.now())
+    .then(res => res.json())
+    .then(data => {
+      updatedAt = data.updated_at || '';
+      backendMatches = data.matches || [];
+      renderBackendMatches();
+      renderHomeCore();
+    })
+    .catch(err => {
+      console.log('加载赔率失败', err);
+      const tip = document.getElementById('refreshTip');
+      if(tip) tip.textContent = '加载失败，请稍后重试';
+    });
+}
+
+function reloadOdds(){
+  loadOdds();
+}
+
+loadOdds();
+setInterval(loadOdds, 30000);
+</script>
 </body>
 </html>
