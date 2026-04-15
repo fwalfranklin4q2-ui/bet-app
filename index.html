@@ -2,13 +2,15 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>投注助手 V14（盈亏曲线版）</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>投注助手 V15（UI重构版）</title>
 <style>
   :root{
-    --bg:#0b1220;
-    --panel:#121a2b;
-    --panel2:#0f172a;
+    --bg:#08101f;
+    --panel:#111a2e;
+    --panel2:#16233b;
+    --panel3:#0e1729;
+    --line:#223252;
     --text:#ffffff;
     --muted:#9ca3af;
     --green:#4ade80;
@@ -16,59 +18,51 @@
     --red:#f87171;
     --blue:#60a5fa;
     --purple:#8b5cf6;
+    --cyan:#22d3ee;
   }
   *{box-sizing:border-box}
   body{
     margin:0;
-    background:var(--bg);
+    background:linear-gradient(180deg,#07101d 0%,#0b1220 100%);
     color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif;
   }
-  .app{max-width:430px;margin:auto;padding:16px}
-  .title{font-size:24px;font-weight:800;margin-bottom:8px}
-  .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .app{
+    max-width:430px;
+    margin:0 auto;
+    padding:14px 14px 90px;
+  }
+  .hero{
+    padding:10px 4px 14px;
+  }
+  .hero-title{
+    font-size:28px;
+    font-weight:900;
+    line-height:1.2;
+    margin:0 0 6px;
+  }
+  .hero-sub{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+  }
   .card{
-    background:var(--panel);
-    border-radius:16px;
-    padding:14px;
+    background:linear-gradient(180deg,var(--panel) 0%,#0f1729 100%);
+    border:1px solid rgba(255,255,255,.04);
+    border-radius:20px;
+    padding:16px;
     margin-bottom:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.18);
   }
-  .card h3{margin:0 0 10px 0;font-size:18px}
-  .input,.textarea,.select{
-    width:100%;
-    border:none;
-    border-radius:12px;
-    padding:12px;
-    font-size:16px;
-    background:#f3f4f6;
-    color:#111827;
-    margin-top:8px;
+  .section-title{
+    font-size:20px;
+    font-weight:800;
+    margin:0 0 10px;
   }
-  .textarea{
-    min-height:140px;
-    resize:vertical;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  }
-  .btn{
-    width:100%;
-    margin-top:10px;
-    border:none;
-    border-radius:12px;
-    padding:13px;
-    font-size:15px;
-    font-weight:700;
-    color:#fff;
-    background:linear-gradient(90deg,#6a5cff,#8f5cff);
-  }
-  .btn.secondary{background:#334155}
-  .btn.blue{background:#1d4ed8}
-  .btn.green{background:#166534}
-  .btn.red{background:#991b1b}
-  .rowBtns{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    margin-top:10px;
+  .section-sub{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:10px;
   }
   .grid{
     display:grid;
@@ -77,12 +71,105 @@
   }
   .kpi{
     background:var(--panel2);
-    border-radius:14px;
+    border-radius:16px;
     padding:14px 12px;
-    text-align:center;
+    position:relative;
+    overflow:hidden;
   }
-  .kpi .v{font-size:22px;font-weight:800}
-  .kpi .l{margin-top:4px;font-size:12px;color:var(--muted)}
+  .kpi::after{
+    content:"";
+    position:absolute;
+    right:-20px;
+    top:-20px;
+    width:70px;
+    height:70px;
+    background:rgba(255,255,255,.04);
+    border-radius:50%;
+  }
+  .kpi-v{
+    font-size:24px;
+    font-weight:900;
+  }
+  .kpi-l{
+    margin-top:6px;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .input,.textarea,.select{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-size:16px;
+    background:#f3f4f6;
+    color:#111827;
+    margin-top:8px;
+  }
+  .textarea{
+    min-height:120px;
+    resize:vertical;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .btn{
+    width:100%;
+    margin-top:10px;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-size:16px;
+    font-weight:800;
+    color:#fff;
+    background:linear-gradient(90deg,#4f73ff,#7b5cff);
+  }
+  .btn.secondary{background:#334155}
+  .btn.green{background:linear-gradient(90deg,#166534,#16a34a)}
+  .btn.red{background:linear-gradient(90deg,#7f1d1d,#dc2626)}
+  .btn.blue{background:linear-gradient(90deg,#1d4ed8,#2563eb)}
+  .rowBtns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:10px;
+  }
+  .pill-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .pill{
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    background:rgba(96,165,250,.13);
+    color:#dbeafe;
+  }
+  .ok{color:var(--green)}
+  .warn{color:var(--yellow)}
+  .danger{color:var(--red)}
+  .small{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+  }
+  .divider{
+    height:1px;
+    background:var(--line);
+    margin:10px 0;
+  }
+  .core-card{
+    background:linear-gradient(135deg,rgba(74,124,255,.18),rgba(139,92,246,.12));
+    border:1px solid rgba(123,92,255,.22);
+    border-radius:18px;
+    padding:14px;
+    margin-top:10px;
+  }
+  .core-title{
+    font-size:16px;
+    font-weight:900;
+    margin-bottom:8px;
+  }
   .chip{
     display:inline-block;
     padding:8px 12px;
@@ -93,127 +180,167 @@
     color:#c7d9ff;
     border:1px solid transparent;
   }
-  .chip.active{border-color:var(--green);color:#fff}
+  .chip.active{
+    border-color:var(--green);
+    color:#fff;
+    background:rgba(74,222,128,.12);
+  }
   .match{
-    background:var(--panel2);
-    border-radius:14px;
-    padding:12px;
+    background:var(--panel3);
+    border:1px solid rgba(255,255,255,.04);
+    border-radius:18px;
+    padding:14px;
     margin-top:10px;
   }
-  .top{
+  .match-top{
     display:flex;
     justify-content:space-between;
-    gap:8px;
     align-items:flex-start;
+    gap:10px;
   }
-  .name{font-weight:700;font-size:16px}
-  .small{color:var(--muted);font-size:13px}
-  .divider{height:1px;background:#24324d;margin:10px 0}
+  .match-id{
+    font-size:12px;
+    color:var(--cyan);
+    margin-bottom:4px;
+    font-weight:700;
+  }
+  .match-name{
+    font-size:18px;
+    font-weight:800;
+    line-height:1.35;
+  }
+  .match-league{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:4px;
+  }
   .tag{
     display:inline-block;
-    padding:4px 8px;
+    padding:6px 10px;
     border-radius:999px;
     font-size:12px;
-    font-weight:700;
+    font-weight:800;
+    white-space:nowrap;
   }
   .t-green{background:rgba(74,222,128,.15);color:var(--green)}
   .t-yellow{background:rgba(250,204,21,.15);color:var(--yellow)}
   .t-red{background:rgba(248,113,113,.15);color:var(--red)}
   .t-blue{background:rgba(96,165,250,.15);color:var(--blue)}
-  .warn{color:var(--yellow)}
-  .danger{color:var(--red)}
-  .ok{color:var(--green)}
-  .archiveItem{
-    background:var(--panel2);
-    border-radius:12px;
-    padding:10px;
-    margin-top:8px;
-  }
-  .chartWrap{
-    background:var(--panel2);
-    border-radius:12px;
-    padding:10px;
+  .odds-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:8px;
     margin-top:10px;
   }
-  canvas{
-    width:100%;
-    height:180px;
+  .odds-box{
+    background:#111b31;
+    border-radius:12px;
+    padding:10px 8px;
+    text-align:center;
+  }
+  .odds-box b{
     display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+  .odds-box span{
+    font-size:18px;
+    font-weight:800;
+  }
+  .archiveItem{
+    background:var(--panel3);
+    border-radius:14px;
+    padding:12px;
+    margin-top:8px;
+  }
+  .bottom-nav{
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:12px;
+    width:min(430px,calc(100% - 18px));
+    background:rgba(10,16,29,.92);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:22px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    padding:8px 6px;
+    backdrop-filter:blur(10px);
+  }
+  .nav-item{
+    text-align:center;
+    color:var(--muted);
+    font-size:11px;
+    padding:6px 0;
+  }
+  .nav-item b{
+    display:block;
+    font-size:18px;
+    margin-bottom:4px;
+  }
+  .nav-item.active{
+    color:#fff;
   }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <div class="title">🔥 投注助手 V14（盈亏曲线版）</div>
-  <div class="sub">每日归档｜盈亏记录｜走势曲线｜自动赔率｜自动分析｜止损保护</div>
+  <div class="hero">
+    <div class="hero-title">🔥 投注助手 V15</div>
+    <div class="hero-sub">UI重构版｜每日比赛池｜自动赔率｜自动分析｜防庄识别｜归档与盈亏面板</div>
+  </div>
 
   <div class="card">
-    <h3>比赛日总控</h3>
+    <div class="section-title">今日总览</div>
+    <div class="grid">
+      <div class="kpi"><div class="kpi-v" id="kpiBudget">200</div><div class="kpi-l">总预算</div></div>
+      <div class="kpi"><div class="kpi-v" id="kpiUpdated">--</div><div class="kpi-l">更新时间</div></div>
+      <div class="kpi"><div class="kpi-v" id="kpiMainCount">0</div><div class="kpi-l">主线场数</div></div>
+      <div class="kpi"><div class="kpi-v" id="kpiWarnCount">0</div><div class="kpi-l">风险提示</div></div>
+      <div class="kpi"><div class="kpi-v" id="kpiProfit">0</div><div class="kpi-l">累计盈亏</div></div>
+      <div class="kpi"><div class="kpi-v" id="kpiRate">0%</div><div class="kpi-l">命中率</div></div>
+    </div>
+
+    <div class="core-card">
+      <div class="core-title">🎯 今日核心判断</div>
+      <div id="overview">等待分析...</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">参数设置</div>
     <input id="budget" class="input" type="number" value="200" placeholder="总预算">
     <input id="singleMatch" class="input" type="text" value="2006" placeholder="利润单关场编号">
     <input id="dayLabel" class="input" type="text" value="" placeholder="比赛日标签，例如 2026-04-15 晚场">
-    <div class="small" style="margin-top:8px;">每个比赛日标签都会独立保存：补录比赛、已选比赛、归档方案、盈亏结果。</div>
-  </div>
-
-  <div class="card">
-    <h3>自动赔率状态</h3>
-    <div id="status">加载中...</div>
     <button class="btn" onclick="loadData()">立即读取后台数据</button>
-    <div class="small" style="margin-top:8px;">默认读取 ./data/odds.json，并每30秒自动刷新。</div>
+    <div class="small" id="status" style="margin-top:8px;">加载中...</div>
   </div>
 
   <div class="card">
-    <h3>今日比赛池</h3>
+    <div class="section-title">今日比赛池</div>
+    <div class="section-sub">点标签勾选今天真正要分析的比赛</div>
     <div id="poolChips">等待加载...</div>
     <button class="btn blue" onclick="selectAllMatches()">全选今日比赛</button>
     <button class="btn secondary" onclick="clearSelectedMatches()">清空今日比赛</button>
   </div>
 
   <div class="card">
-    <h3>手动补录今日比赛</h3>
+    <div class="section-title">补录比赛</div>
     <textarea id="manualMatches" class="textarea" placeholder='粘贴 JSON 数组'></textarea>
     <button class="btn" onclick="mergeManualMatches()">合并到今日比赛池</button>
-    <button class="btn secondary" onclick="loadSavedManualMatches()">读取今日已保存补录</button>
+    <button class="btn secondary" onclick="loadSavedManualMatches()">读取今日补录</button>
     <button class="btn red" onclick="clearSavedManualMatches()">清空今日补录</button>
   </div>
 
   <div class="card">
-    <h3>比赛日归档</h3>
-    <button class="btn green" onclick="saveArchive()">保存今日方案归档</button>
-    <select id="archiveSelect" class="select" onchange="loadArchive()">
-      <option value="">选择历史比赛日</option>
-    </select>
-    <div id="archiveView" class="small" style="margin-top:10px;">暂无归档</div>
+    <div class="section-title">实战建议</div>
+    <div id="bets">等待分析...</div>
   </div>
 
   <div class="card">
-    <h3>盈亏总览</h3>
-    <div class="grid">
-      <div class="kpi"><div class="v" id="kpiBudget">200</div><div class="l">总预算</div></div>
-      <div class="kpi"><div class="v" id="kpiUpdated">--</div><div class="l">更新时间</div></div>
-      <div class="kpi"><div class="v" id="kpiWin">0</div><div class="l">红单</div></div>
-      <div class="kpi"><div class="v" id="kpiLoss">0</div><div class="l">黑单</div></div>
-      <div class="kpi"><div class="v" id="kpiStreak">0</div><div class="l">连错</div></div>
-      <div class="kpi"><div class="v" id="kpiRate">0%</div><div class="l">命中率</div></div>
-      <div class="kpi"><div class="v" id="kpiProfit">0</div><div class="l">累计盈亏</div></div>
-      <div class="kpi"><div class="v" id="kpiDays">0</div><div class="l">已归档天数</div></div>
-    </div>
-
-    <div class="rowBtns">
-      <button class="btn green" onclick="recordDayProfit(true)">记录今日盈利</button>
-      <button class="btn red" onclick="recordDayProfit(false)">记录今日亏损</button>
-    </div>
-    <input id="profitAmount" class="input" type="number" value="50" placeholder="输入盈亏金额，例如 50 或 100">
-
-    <div class="chartWrap">
-      <div class="small" style="margin-bottom:6px;">盈亏曲线</div>
-      <canvas id="profitChart" width="380" height="180"></canvas>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>止损状态</h3>
+    <div class="section-title">风险预警</div>
     <div id="riskPanel">等待分析...</div>
     <div class="rowBtns">
       <button class="btn green" onclick="markLastBet('win')">最近一单：红了</button>
@@ -223,20 +350,26 @@
   </div>
 
   <div class="card">
-    <h3>今日总判断</h3>
-    <div id="overview">等待分析...</div>
-  </div>
-
-  <div class="card">
-    <h3>今日逐场分析</h3>
+    <div class="section-title">比赛分析</div>
     <div id="matches">等待分析...</div>
   </div>
 
   <div class="card">
-    <h3>今日实战建议</h3>
-    <div id="bets">等待分析...</div>
+    <div class="section-title">归档中心</div>
+    <button class="btn green" onclick="saveArchive()">保存今日方案归档</button>
+    <select id="archiveSelect" class="select" onchange="loadArchive()">
+      <option value="">选择历史比赛日</option>
+    </select>
+    <div id="archiveView" class="small" style="margin-top:10px;">暂无归档</div>
   </div>
 
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active"><b>🏠</b>首页</div>
+  <div class="nav-item"><b>📋</b>比赛</div>
+  <div class="nav-item"><b>🛡</b>风控</div>
+  <div class="nav-item"><b>🗂</b>归档</div>
 </div>
 
 <script>
@@ -249,8 +382,7 @@ let stats = JSON.parse(localStorage.getItem('betapp_stats') || '{"win":0,"loss":
 let profitBook = JSON.parse(localStorage.getItem('betapp_profit_book') || '[]');
 
 function dayKey(){
-  const label = document.getElementById('dayLabel').value.trim() || 'default-day';
-  return label;
+  return document.getElementById('dayLabel').value.trim() || 'default-day';
 }
 function manualKey(){ return 'betapp_manual_matches_' + dayKey(); }
 function selectedKey(){ return 'betapp_selected_ids_' + dayKey(); }
@@ -259,27 +391,9 @@ function archiveKey(label){ return 'betapp_archive_' + label; }
 
 function saveStats(){
   localStorage.setItem('betapp_stats', JSON.stringify(stats));
-  renderStats();
+  renderRiskPanel();
+  renderTopStats();
   analyze();
-}
-function renderStats(){
-  const total = stats.win + stats.loss;
-  const rate = total ? Math.round((stats.win / total) * 100) : 0;
-  document.getElementById('kpiWin').textContent = stats.win;
-  document.getElementById('kpiLoss').textContent = stats.loss;
-  document.getElementById('kpiStreak').textContent = stats.streak;
-  document.getElementById('kpiRate').textContent = rate + '%';
-
-  let html = '';
-  if(stats.streak >= 3){
-    html = `<div class="danger">⛔ 连错 ${stats.streak} 场，建议今日停手或仅观察。</div>`;
-  }else if(stats.streak === 2){
-    html = `<div class="warn">⚠️ 连错 2 场，进入止损模式：预算减半。</div>`;
-  }else{
-    html = `<div class="ok">✅ 正常模式：可按系统建议执行。</div>`;
-  }
-  html += `<div class="small" style="margin-top:8px;">红单 ${stats.win}｜黑单 ${stats.loss}｜命中率 ${rate}%</div>`;
-  document.getElementById('riskPanel').innerHTML = html;
 }
 function markLastBet(type){
   if(type === 'win'){
@@ -294,6 +408,36 @@ function markLastBet(type){
 function resetStats(){
   stats = {win:0, loss:0, streak:0};
   saveStats();
+}
+
+function renderTopStats(mainCount=0,warnCount=0){
+  const total = stats.win + stats.loss;
+  const rate = total ? Math.round((stats.win / total) * 100) : 0;
+  const totalProfit = profitBook.reduce((s,x)=>s+x.amount,0);
+  document.getElementById('kpiBudget').textContent = document.getElementById('budget').value || 200;
+  document.getElementById('kpiRate').textContent = rate + '%';
+  document.getElementById('kpiProfit').textContent = totalProfit;
+  document.getElementById('kpiMainCount').textContent = mainCount;
+  document.getElementById('kpiWarnCount').textContent = warnCount;
+}
+function renderRiskPanel(){
+  const total = stats.win + stats.loss;
+  const rate = total ? Math.round((stats.win / total) * 100) : 0;
+  let html = `<div class="pill-row">
+    <span class="pill">红单 ${stats.win}</span>
+    <span class="pill">黑单 ${stats.loss}</span>
+    <span class="pill">连错 ${stats.streak}</span>
+    <span class="pill">命中率 ${rate}%</span>
+  </div>`;
+  html += `<div class="divider"></div>`;
+  if(stats.streak >= 3){
+    html += `<div class="danger">⛔ 连错 ${stats.streak} 场，建议停手。</div>`;
+  }else if(stats.streak === 2){
+    html += `<div class="warn">⚠️ 连错 2 场，进入止损模式：预算减半。</div>`;
+  }else{
+    html += `<div class="ok">✅ 正常模式，可按系统建议执行。</div>`;
+  }
+  document.getElementById('riskPanel').innerHTML = html;
 }
 
 function saveSelected(){
@@ -312,7 +456,6 @@ function loadSavedManualMatches(){
     rebuildMatchPool();
     renderPool();
     analyze();
-    document.getElementById('status').innerHTML += '｜已读取今日补录';
   }catch(e){}
 }
 function loadSavedManualMatchesSilently(){
@@ -342,108 +485,15 @@ function mergeManualMatches(){
     rebuildMatchPool();
     renderPool();
     analyze();
-    document.getElementById('status').innerHTML += '｜已合并今日补录';
   }catch(e){
-    document.getElementById('status').innerHTML += '｜补录格式错误';
+    document.getElementById('status').innerHTML = '❌ 补录格式错误';
   }
 }
-
 function rebuildMatchPool(){
   const map = {};
   backendMatches.forEach(m => map[m.id] = m);
   manualMatches.forEach(m => map[m.id] = m);
   currentMatches = Object.values(map);
-}
-
-function minOddsSide(m){
-  const min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
-  if(min === m.homeOdds) return '胜';
-  if(min === m.drawOdds) return '平';
-  return '负';
-}
-function getBaseScore(m){
-  let min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
-  if(min < 1.35) return 82;
-  if(min < 1.50) return 75;
-  if(min < 1.80) return 66;
-  if(min < 2.20) return 58;
-  return 42;
-}
-function getMovementInfo(m){
-  const prev = lastSnapshot[m.id];
-  if(!prev){
-    return { summary:'首次记录', flags:[] };
-  }
-  const dw = +(m.homeOdds - prev.homeOdds).toFixed(2);
-  const dd = +(m.drawOdds - prev.drawOdds).toFixed(2);
-  const da = +(m.awayOdds - prev.awayOdds).toFixed(2);
-  const flags = [];
-  if(Math.abs(dw) >= 0.08 || Math.abs(dd) >= 0.10 || Math.abs(da) >= 0.10) flags.push('赔率异动');
-  if(dw > 0.08 && m.homeOdds < 1.70) flags.push('主胜升赔转弱');
-  if(dw < -0.08 && m.homeOdds < 1.55) flags.push('主胜持续降赔');
-  if(dd < -0.08 && m.drawOdds < 3.10) flags.push('平赔陷阱增强');
-  return {
-    summary:`主${dw > 0 ? '↑' : dw < 0 ? '↓' : '-'}${Math.abs(dw)} 平${dd > 0 ? '↑' : dd < 0 ? '↓' : '-'}${Math.abs(dd)} 客${da > 0 ? '↑' : da < 0 ? '↓' : '-'}${Math.abs(da)}`,
-    flags
-  };
-}
-function antiBookieAnalyze(m, singleMatch){
-  const pick = minOddsSide(m);
-  let score = getBaseScore(m);
-  const flags = [];
-  const movement = getMovementInfo(m);
-  const note = m.note || '';
-  const min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
-  const max = Math.max(m.homeOdds, m.drawOdds, m.awayOdds);
-  const spread = +(max - min).toFixed(2);
-
-  if(note.includes('稳胆')) { score += 6; flags.push('样本备注：稳胆'); }
-  if(note.includes('次稳')) { score += 3; flags.push('样本备注：次稳'); }
-  if(note.includes('诱盘')) { score -= 10; flags.push('样本备注：诱盘'); }
-  if(note.includes('异常')) { score -= 10; flags.push('样本备注：赔率异常'); }
-  if(note.includes('均势')) { score -= 8; flags.push('样本备注：均势'); }
-  if(note.includes('伪强盘')) { score -= 10; flags.push('样本备注：伪强盘'); }
-
-  if(spread < 0.45){ score -= 12; flags.push('伪均势盘'); }
-  if(m.drawOdds < 3.0){ score -= 10; flags.push('平赔陷阱'); }
-  if(min < 1.35 && spread < 3.5){ score -= 8; flags.push('低赔过热'); }
-
-  movement.flags.forEach(f => flags.push(f));
-  if(movement.flags.includes('主胜升赔转弱')) score -= 10;
-  if(movement.flags.includes('平赔陷阱增强')) score -= 8;
-  if(movement.flags.includes('主胜持续降赔')) score += 3;
-
-  if(stats.streak >= 2){
-    score -= 8;
-    flags.push('止损模式');
-  }
-
-  if(score > 90) score = 90;
-  if(score < 25) score = 25;
-
-  let level = '放弃';
-  let cls = 't-red';
-  let advice = '不建议介入';
-
-  if(score >= 74){
-    level = '主线';
-    cls = 't-green';
-    advice = '可做主线';
-  }else if(score >= 60){
-    level = '增益';
-    cls = 't-yellow';
-    advice = '可做辅助串关';
-  }else if(score >= 45){
-    level = '防守';
-    cls = 't-blue';
-    advice = '只能小注防守';
-  }
-
-  if(m.id === singleMatch && level !== '放弃'){
-    advice += '｜可做利润单';
-  }
-
-  return {...m,pick,score,level,cls,flags,advice,movement};
 }
 
 function renderPool(){
@@ -480,52 +530,126 @@ function clearSelectedMatches(){
   analyze();
 }
 
+function minOddsSide(m){
+  const min = Math.min(m.homeOdds,m.drawOdds,m.awayOdds);
+  if(min === m.homeOdds) return '胜';
+  if(min === m.drawOdds) return '平';
+  return '负';
+}
+function getBaseScore(m){
+  const min = Math.min(m.homeOdds,m.drawOdds,m.awayOdds);
+  if(min < 1.35) return 82;
+  if(min < 1.50) return 75;
+  if(min < 1.80) return 66;
+  if(min < 2.20) return 58;
+  return 42;
+}
+function getMovementInfo(m){
+  const prev = lastSnapshot[m.id];
+  if(!prev) return {summary:'首次记录',flags:[]};
+
+  const dw = +(m.homeOdds - prev.homeOdds).toFixed(2);
+  const dd = +(m.drawOdds - prev.drawOdds).toFixed(2);
+  const da = +(m.awayOdds - prev.awayOdds).toFixed(2);
+  const flags = [];
+
+  if(Math.abs(dw)>=0.08 || Math.abs(dd)>=0.10 || Math.abs(da)>=0.10) flags.push('赔率异动');
+  if(dw>0.08 && m.homeOdds<1.70) flags.push('主胜升赔转弱');
+  if(dw< -0.08 && m.homeOdds<1.55) flags.push('主胜持续降赔');
+  if(dd< -0.08 && m.drawOdds<3.10) flags.push('平赔陷阱增强');
+
+  return {
+    summary:`主${dw>0?'↑':dw<0?'↓':'-'}${Math.abs(dw)} 平${dd>0?'↑':dd<0?'↓':'-'}${Math.abs(dd)} 客${da>0?'↑':da<0?'↓':'-'}${Math.abs(da)}`,
+    flags
+  };
+}
+function antiBookieAnalyze(m,singleMatch){
+  const pick = minOddsSide(m);
+  let score = getBaseScore(m);
+  const flags = [];
+  const movement = getMovementInfo(m);
+  const note = m.note || '';
+  const min = Math.min(m.homeOdds,m.drawOdds,m.awayOdds);
+  const max = Math.max(m.homeOdds,m.drawOdds,m.awayOdds);
+  const spread = +(max-min).toFixed(2);
+
+  if(note.includes('稳胆')){score += 6; flags.push('样本备注：稳胆');}
+  if(note.includes('次稳')){score += 3; flags.push('样本备注：次稳');}
+  if(note.includes('诱盘')){score -= 10; flags.push('样本备注：诱盘');}
+  if(note.includes('异常')){score -= 10; flags.push('样本备注：赔率异常');}
+  if(note.includes('均势')){score -= 8; flags.push('样本备注：均势');}
+  if(note.includes('伪强盘')){score -= 10; flags.push('样本备注：伪强盘');}
+
+  if(spread < 0.45){score -= 12; flags.push('伪均势盘');}
+  if(m.drawOdds < 3.0){score -= 10; flags.push('平赔陷阱');}
+  if(min < 1.35 && spread < 3.5){score -= 8; flags.push('低赔过热');}
+
+  movement.flags.forEach(f=>flags.push(f));
+  if(movement.flags.includes('主胜升赔转弱')) score -= 10;
+  if(movement.flags.includes('平赔陷阱增强')) score -= 8;
+  if(movement.flags.includes('主胜持续降赔')) score += 3;
+
+  if(stats.streak >= 2){
+    score -= 8;
+    flags.push('止损模式');
+  }
+
+  score = Math.max(25, Math.min(90, score));
+
+  let level='放弃', cls='t-red', advice='不建议介入';
+  if(score >= 74){ level='主线'; cls='t-green'; advice='可做主线'; }
+  else if(score >= 60){ level='增益'; cls='t-yellow'; advice='可做辅助串关'; }
+  else if(score >= 45){ level='防守'; cls='t-blue'; advice='只能小注防守'; }
+
+  if(m.id === singleMatch && level !== '放弃') advice += '｜可做利润单';
+
+  return {...m,pick,score,level,cls,flags,advice,movement};
+}
+
 function renderOverview(results){
-  const mains = results.filter(x => x.level === '主线');
-  const warns = results.filter(x => x.flags.length > 0);
+  const mains = results.filter(x=>x.level==='主线');
+  const warns = results.filter(x=>x.flags.length>0);
   const label = document.getElementById('dayLabel').value.trim();
 
   let html = '';
-  if(label){
-    html += `<div class="small">比赛日：${label}</div><div class="divider"></div>`;
-  }
-  html += `<div class="small">今日比赛数：${results.length}</div><div class="divider"></div>`;
+  if(label) html += `<div class="small">比赛日：${label}</div><div class="divider"></div>`;
 
-  if(stats.streak >= 3){
-    html += `<div class="danger">⛔ 连错达到 ${stats.streak}，建议今日停手。</div><div class="divider"></div>`;
-  }else if(stats.streak === 2){
-    html += `<div class="warn">⚠️ 止损模式中：预算减半，串关降级。</div><div class="divider"></div>`;
+  if(!results.length) return `<div class="warn">还没有选择今日比赛。</div>`;
+
+  if(stats.streak >= 2){
+    html += `<div class="warn">当前处于止损模式，请降低仓位。</div><div class="divider"></div>`;
   }
 
-  if(!results.length){
-    html += `<div class="warn">还没有选择今日比赛。</div>`;
-    return html;
-  }
   if(!mains.length){
-    html += `<div class="danger">今日无合格主线，建议观察或极小仓位。</div>`;
+    html += `<div class="danger">今日无合格主线，建议观察。</div>`;
     return html;
   }
 
-  html += `<div class="ok">今日主线：${mains.map(x => `${x.id}${x.pick}`).join('；')}</div>`;
+  html += `<div class="ok">主线：${mains.map(x=>`${x.id}${x.pick}`).join('；')}</div>`;
   if(warns.length){
-    html += `<div class="warn" style="margin-top:8px;">风险场：${warns.map(x => x.id).join('、')}</div>`;
+    html += `<div class="small" style="margin-top:8px;">风险场：${warns.map(x=>x.id).join('、')}</div>`;
   }
   return html;
 }
 
 function renderMatches(results){
-  return results.map(m => `
+  return results.map(m=>`
     <div class="match">
-      <div class="top">
+      <div class="match-top">
         <div>
-          <div class="name">${m.id} ${m.home} vs ${m.away}</div>
-          <div class="small">${m.league || ''}</div>
+          <div class="match-id">${m.id}</div>
+          <div class="match-name">${m.home} vs ${m.away}</div>
+          <div class="match-league">${m.league || ''}</div>
         </div>
-        <div><span class="tag ${m.cls}">${m.level}</span></div>
+        <span class="tag ${m.cls}">${m.level}</span>
+      </div>
+      <div class="odds-row">
+        <div class="odds-box"><b>胜</b><span>${m.homeOdds}</span></div>
+        <div class="odds-box"><b>平</b><span>${m.drawOdds}</span></div>
+        <div class="odds-box"><b>负</b><span>${m.awayOdds}</span></div>
       </div>
       <div class="divider"></div>
       <div>推荐：<b>${m.pick}</b> ｜ 评分：<b>${m.score}</b></div>
-      <div class="small">赔率：胜 ${m.homeOdds} ｜ 平 ${m.drawOdds} ｜ 负 ${m.awayOdds}</div>
       <div class="small">变化：${m.movement.summary}</div>
       <div class="small">建议：${m.advice}</div>
       ${m.flags.length ? `<div class="small" style="margin-top:6px;">提示：${m.flags.join('｜')}</div>` : `<div class="small" style="margin-top:6px;">提示：无明显风险</div>`}
@@ -533,29 +657,38 @@ function renderMatches(results){
   `).join('');
 }
 
-function renderBets(results, budget, singleMatch){
-  const mains = results.filter(x => x.level === '主线').slice(0,2);
-  const gains = results.filter(x => x.level === '增益').slice(0,2);
-  const defense = results.filter(x => x.level === '防守').slice(0,1);
-  const single = results.find(x => x.id === singleMatch && x.level !== '放弃');
+function renderBets(results,budget,singleMatch){
+  const mains = results.filter(x=>x.level==='主线').slice(0,2);
+  const gains = results.filter(x=>x.level==='增益').slice(0,2);
+  const defense = results.filter(x=>x.level==='防守').slice(0,1);
+  const single = results.find(x=>x.id===singleMatch && x.level!=='放弃');
 
   if(!results.length) return `<div class="warn">先选择今日比赛。</div>`;
-  if(!mains.length) return `<div class="danger">今日主线不足，建议空仓或只做极小防守。</div>`;
+  if(!mains.length) return `<div class="danger">今日主线不足，建议空仓。</div>`;
 
   let useBudget = budget;
-  if(stats.streak >= 2) useBudget = Math.floor(budget * 0.5);
+  if(stats.streak >= 2) useBudget = Math.floor(budget*0.5);
 
-  const singleAmt = Math.floor(useBudget * 0.5);
-  const comboAmt = Math.floor(useBudget * 0.3);
+  const singleAmt = Math.floor(useBudget*0.5);
+  const comboAmt = Math.floor(useBudget*0.3);
   const hedgeAmt = useBudget - singleAmt - comboAmt;
 
-  let html = `<div>单关主线：${mains[0].id} ${mains[0].pick}（${singleAmt}元）</div>`;
+  let html = `
+    <div class="pill-row">
+      <span class="pill">主线预算 ${singleAmt}</span>
+      <span class="pill">串关预算 ${comboAmt}</span>
+      <span class="pill">防守预算 ${hedgeAmt}</span>
+    </div>
+    <div class="divider"></div>
+    <div>单关主线：${mains[0].id} ${mains[0].pick}（${singleAmt}元）</div>
+  `;
+
   if(mains.length >= 2){
     html += `<div>2串1主线：${mains[0].id}${mains[0].pick} + ${mains[1].id}${mains[1].pick}（${comboAmt}元）</div>`;
   }else if(gains.length){
     html += `<div>2串1增强：${mains[0].id}${mains[0].pick} + ${gains[0].id}${gains[0].pick}（${comboAmt}元）</div>`;
   }else{
-    html += `<div>2串1：今日不建议强行凑单</div>`;
+    html += `<div>2串1：今日不建议强凑</div>`;
   }
 
   if(defense.length){
@@ -565,31 +698,28 @@ function renderBets(results, budget, singleMatch){
   }
 
   if(single){
-    html += `<div style="margin-top:8px;">利润单：${single.id} ${single.pick}（从防守位中拆小额）</div>`;
+    html += `<div style="margin-top:8px;">利润单：${single.id} ${single.pick}</div>`;
   }
-  if(stats.streak >= 2){
-    html += `<div class="warn" style="margin-top:8px;">当前止损模式：总执行预算已自动降到 ${useBudget} 元。</div>`;
-  }
+
   return html;
 }
 
 function renderArchiveOptions(){
   const sel = document.getElementById('archiveSelect');
   const list = JSON.parse(localStorage.getItem(archiveListKey()) || '[]');
-  sel.innerHTML = `<option value="">选择历史比赛日</option>` + list.map(x => `<option value="${x}">${x}</option>`).join('');
+  sel.innerHTML = `<option value="">选择历史比赛日</option>` + list.map(x=>`<option value="${x}">${x}</option>`).join('');
 }
-
 function saveArchive(){
   const label = dayKey();
   if(!label || label === 'default-day') return;
   const budget = parseFloat(document.getElementById('budget').value || '200');
   const singleMatch = document.getElementById('singleMatch').value.trim();
-  const filtered = currentMatches.filter(m => selectedMatchIds.includes(m.id));
-  const results = filtered.map(m => antiBookieAnalyze(m, singleMatch)).sort((a,b) => b.score - a.score);
+  const filtered = currentMatches.filter(m=>selectedMatchIds.includes(m.id));
+  const results = filtered.map(m=>antiBookieAnalyze(m,singleMatch)).sort((a,b)=>b.score-a.score);
 
   const payload = {
     label,
-    savedAt: new Date().toLocaleString(),
+    savedAt:new Date().toLocaleString(),
     budget,
     singleMatch,
     selectedMatchIds,
@@ -601,16 +731,12 @@ function saveArchive(){
   localStorage.setItem(archiveKey(label), JSON.stringify(payload));
 
   let list = JSON.parse(localStorage.getItem(archiveListKey()) || '[]');
-  if(!list.includes(label)){
-    list.unshift(label);
-  }else{
-    list = [label, ...list.filter(x => x !== label)];
-  }
+  if(!list.includes(label)) list.unshift(label);
+  else list = [label, ...list.filter(x=>x!==label)];
   localStorage.setItem(archiveListKey(), JSON.stringify(list));
   renderArchiveOptions();
-  document.getElementById('archiveView').innerHTML = `<div class="ok">已保存比赛日归档：${label}</div>`;
+  document.getElementById('archiveView').innerHTML = `<div class="archiveItem"><span class="ok">已保存比赛日归档：${label}</span></div>`;
 }
-
 function loadArchive(){
   const label = document.getElementById('archiveSelect').value;
   if(!label) return;
@@ -620,10 +746,16 @@ function loadArchive(){
     return;
   }
   const data = JSON.parse(raw);
-
-  let html = `<div class="archiveItem"><b>${data.label}</b><div class="small">保存时间：${data.savedAt}</div><div class="small">预算：${data.budget}｜利润单：${data.singleMatch}</div><div class="small">红单：${data.stats.win}｜黑单：${data.stats.loss}｜连错：${data.stats.streak}</div></div>`;
-  if(data.results && data.results.length){
-    html += data.results.map(m => `
+  let html = `
+    <div class="archiveItem">
+      <b>${data.label}</b>
+      <div class="small">保存时间：${data.savedAt}</div>
+      <div class="small">预算：${data.budget}｜利润单：${data.singleMatch}</div>
+      <div class="small">红单：${data.stats.win}｜黑单：${data.stats.loss}｜连错：${data.stats.streak}</div>
+    </div>
+  `;
+  if(data.results?.length){
+    html += data.results.map(m=>`
       <div class="archiveItem">
         <div><b>${m.id} ${m.home} vs ${m.away}</b> <span class="tag ${m.cls}">${m.level}</span></div>
         <div class="small">推荐：${m.pick}｜评分：${m.score}</div>
@@ -633,110 +765,10 @@ function loadArchive(){
   document.getElementById('archiveView').innerHTML = html;
 }
 
-function saveProfitBook(){
-  localStorage.setItem('betapp_profit_book', JSON.stringify(profitBook));
-  renderProfitPanel();
-}
-function recordDayProfit(isWin){
-  const label = dayKey();
-  if(!label || label === 'default-day') return;
-  const amountRaw = parseFloat(document.getElementById('profitAmount').value || '0');
-  const amount = Math.abs(amountRaw);
-  const signed = isWin ? amount : -amount;
-
-  const existing = profitBook.find(x => x.label === label);
-  if(existing){
-    existing.amount = signed;
-    existing.updatedAt = new Date().toLocaleString();
-  }else{
-    profitBook.push({
-      label,
-      amount: signed,
-      updatedAt: new Date().toLocaleString()
-    });
-  }
-  profitBook.sort((a,b) => a.label.localeCompare(b.label));
-  saveProfitBook();
-}
-function renderProfitPanel(){
-  const total = profitBook.reduce((s,x) => s + x.amount, 0);
-  document.getElementById('kpiProfit').textContent = total;
-  document.getElementById('kpiDays').textContent = profitBook.length;
-  drawProfitChart();
-}
-function drawProfitChart(){
-  const canvas = document.getElementById('profitChart');
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width;
-  const h = canvas.height;
-
-  ctx.clearRect(0,0,w,h);
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0,0,w,h);
-
-  if(!profitBook.length){
-    ctx.fillStyle = '#9ca3af';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('暂无盈亏记录', 130, 90);
-    return;
-  }
-
-  const cumulative = [];
-  let sum = 0;
-  for(const item of profitBook){
-    sum += item.amount;
-    cumulative.push({ label:item.label, value:sum });
-  }
-
-  const values = cumulative.map(x => x.value);
-  const min = Math.min(...values, 0);
-  const max = Math.max(...values, 0);
-  const span = (max - min) || 1;
-
-  const left = 30, right = w - 10, top = 15, bottom = h - 25;
-  const zeroY = top + (max / span) * (bottom - top);
-
-  ctx.strokeStyle = '#334155';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(left, zeroY);
-  ctx.lineTo(right, zeroY);
-  ctx.stroke();
-
-  ctx.strokeStyle = '#60a5fa';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  cumulative.forEach((p, i) => {
-    const x = left + (i * (right - left) / Math.max(cumulative.length - 1, 1));
-    const y = top + ((max - p.value) / span) * (bottom - top);
-    if(i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-
-  cumulative.forEach((p, i) => {
-    const x = left + (i * (right - left) / Math.max(cumulative.length - 1, 1));
-    const y = top + ((max - p.value) / span) * (bottom - top);
-    ctx.fillStyle = p.value >= 0 ? '#4ade80' : '#f87171';
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  ctx.fillStyle = '#9ca3af';
-  ctx.font = '11px sans-serif';
-  ctx.fillText(`最高 ${max}`, 8, 12);
-  ctx.fillText(`最低 ${min}`, 8, h - 8);
-}
-
 function updateSnapshot(matches){
   const next = {};
-  matches.forEach(m => {
-    next[m.id] = {
-      homeOdds:m.homeOdds,
-      drawOdds:m.drawOdds,
-      awayOdds:m.awayOdds
-    };
+  matches.forEach(m=>{
+    next[m.id] = {homeOdds:m.homeOdds, drawOdds:m.drawOdds, awayOdds:m.awayOdds};
   });
   localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
   lastSnapshot = next;
@@ -747,9 +779,9 @@ async function loadData(){
     const res = await fetch('./data/odds.json?v=' + Date.now());
     const data = await res.json();
     backendMatches = data.matches || [];
+
     document.getElementById('status').innerHTML = `✔ 已加载（${data.updated_at || '无时间'}）`;
     document.getElementById('kpiUpdated').textContent = (data.updated_at || '--').slice(11,16) || '--';
-    document.getElementById('kpiBudget').textContent = parseFloat(document.getElementById('budget').value || '200');
 
     loadSavedManualMatchesSilently();
     loadSelected();
@@ -765,18 +797,18 @@ async function loadData(){
 function analyze(){
   const budget = parseFloat(document.getElementById('budget').value || '200');
   const singleMatch = document.getElementById('singleMatch').value.trim();
-  const filtered = currentMatches.filter(m => selectedMatchIds.includes(m.id));
-  const results = filtered.map(m => antiBookieAnalyze(m, singleMatch)).sort((a,b) => b.score - a.score);
+  const filtered = currentMatches.filter(m=>selectedMatchIds.includes(m.id));
+  const results = filtered.map(m=>antiBookieAnalyze(m,singleMatch)).sort((a,b)=>b.score-a.score);
 
-  document.getElementById('kpiBudget').textContent = budget;
+  renderTopStats(results.filter(x=>x.level==='主线').length, results.filter(x=>x.flags.length>0).length);
   document.getElementById('overview').innerHTML = renderOverview(results);
   document.getElementById('matches').innerHTML = renderMatches(results);
-  document.getElementById('bets').innerHTML = renderBets(results, budget, singleMatch);
+  document.getElementById('bets').innerHTML = renderBets(results,budget,singleMatch);
 }
 
 document.getElementById('budget').addEventListener('input', analyze);
 document.getElementById('singleMatch').addEventListener('input', analyze);
-document.getElementById('dayLabel').addEventListener('change', () => {
+document.getElementById('dayLabel').addEventListener('change', ()=>{
   loadSavedManualMatches();
   loadSelected();
   rebuildMatchPool();
@@ -785,9 +817,9 @@ document.getElementById('dayLabel').addEventListener('change', () => {
   renderArchiveOptions();
 });
 
-renderStats();
+renderRiskPanel();
+renderTopStats();
 renderArchiveOptions();
-renderProfitPanel();
 setInterval(loadData, 30000);
 loadData();
 </script>
