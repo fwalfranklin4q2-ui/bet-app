@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>投注助手 V16（高级UI版）</title>
+<title>投注助手 V137.9.1</title>
 <style>
   :root{
     --bg:#07101d;
@@ -23,6 +23,7 @@
     --shadow:0 10px 28px rgba(0,0,0,.22);
   }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
   body{
     margin:0;
     background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
@@ -55,7 +56,7 @@
     border-radius:50%;
   }
   .hero-title{
-    font-size:28px;
+    font-size:30px;
     font-weight:900;
     line-height:1.15;
     margin:0 0 8px;
@@ -64,7 +65,7 @@
   .hero-sub{
     color:#d6def0;
     font-size:13px;
-    line-height:1.55;
+    line-height:1.6;
   }
   .hero-pills{
     display:flex;
@@ -88,6 +89,7 @@
     padding:16px;
     margin-bottom:14px;
     box-shadow:var(--shadow);
+    scroll-margin-top:16px;
   }
   .section-title{
     font-size:20px;
@@ -200,6 +202,7 @@
     background:rgba(96,165,250,.12);
     color:#c7d9ff;
     border:1px solid transparent;
+    cursor:pointer;
   }
   .chip.active{
     border-color:var(--green);
@@ -276,9 +279,21 @@
     padding:12px;
     margin-top:8px;
   }
+  .chartWrap{
+    background:var(--panel3);
+    border-radius:14px;
+    padding:10px;
+    margin-top:10px;
+  }
+  canvas{
+    width:100%;
+    height:180px;
+    display:block;
+  }
   .ok{color:var(--green)}
   .warn{color:var(--yellow)}
   .danger{color:var(--red)}
+  .hidden{display:none}
   .bottom-nav{
     position:fixed;
     left:50%;
@@ -293,12 +308,15 @@
     padding:8px 6px;
     backdrop-filter:blur(12px);
     box-shadow:0 10px 30px rgba(0,0,0,.28);
+    z-index:50;
   }
   .nav-item{
     text-align:center;
     color:var(--muted);
     font-size:11px;
     padding:6px 0;
+    cursor:pointer;
+    border-radius:16px;
   }
   .nav-item b{
     display:block;
@@ -307,24 +325,26 @@
   }
   .nav-item.active{
     color:#fff;
+    background:rgba(255,255,255,.05);
   }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <div class="hero">
-    <div class="hero-title">🔥 投注助手 V16</div>
-    <div class="hero-sub">高级 UI 版｜自动赔率｜每日比赛池｜自动分析｜防庄识别｜归档与盈亏面板</div>
+  <section id="sec-home" class="hero">
+    <div class="hero-title">🔥 投注助手 V137.9.1</div>
+    <div class="hero-sub">最终整合版｜自动赔率｜每日比赛池｜自动分析｜防庄识别｜归档｜盈亏｜止损</div>
     <div class="hero-pills">
-      <div class="pill">自动读取赔率</div>
-      <div class="pill">主线/防守分层</div>
+      <div class="pill">自动赔率</div>
+      <div class="pill">主线分层</div>
+      <div class="pill">防庄识别</div>
       <div class="pill">比赛日归档</div>
-      <div class="pill">盈亏统计</div>
+      <div class="pill">盈亏曲线</div>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
+  <section class="card">
     <div class="section-title">今日总览</div>
     <div class="grid">
       <div class="kpi"><div class="kpi-v" id="kpiBudget">200</div><div class="kpi-l">总预算</div></div>
@@ -339,39 +359,39 @@
       <div class="core-title">🎯 今日核心判断</div>
       <div id="overview">等待分析...</div>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
+  <section id="sec-match" class="card">
     <div class="section-title">参数与状态</div>
     <input id="budget" class="input" type="number" value="200" placeholder="总预算">
     <input id="singleMatch" class="input" type="text" value="2006" placeholder="利润单关场编号">
     <input id="dayLabel" class="input" type="text" value="" placeholder="比赛日标签，例如 2026-04-15 晚场">
     <button class="btn" onclick="loadData()">立即读取后台数据</button>
     <div class="small" id="status" style="margin-top:8px;">加载中...</div>
-  </div>
+  </section>
 
-  <div class="card">
+  <section class="card">
     <div class="section-title">今日比赛池</div>
     <div class="section-sub">点标签勾选今天真正要分析的比赛</div>
     <div id="poolChips">等待加载...</div>
     <button class="btn blue" onclick="selectAllMatches()">全选今日比赛</button>
     <button class="btn secondary" onclick="clearSelectedMatches()">清空今日比赛</button>
-  </div>
+  </section>
 
-  <div class="card">
+  <section class="card">
     <div class="section-title">补录比赛</div>
     <textarea id="manualMatches" class="textarea" placeholder='粘贴 JSON 数组'></textarea>
     <button class="btn" onclick="mergeManualMatches()">合并到今日比赛池</button>
     <button class="btn secondary" onclick="loadSavedManualMatches()">读取今日补录</button>
     <button class="btn red" onclick="clearSavedManualMatches()">清空今日补录</button>
-  </div>
+  </section>
 
-  <div class="card">
+  <section class="card">
     <div class="section-title">实战建议</div>
     <div id="bets">等待分析...</div>
-  </div>
+  </section>
 
-  <div class="card">
+  <section id="sec-risk" class="card">
     <div class="section-title">风控面板</div>
     <div id="riskPanel">等待分析...</div>
     <div class="rowBtns">
@@ -379,29 +399,42 @@
       <button class="btn red" onclick="markLastBet('loss')">最近一单：黑了</button>
     </div>
     <button class="btn secondary" onclick="resetStats()">重置统计</button>
-  </div>
+  </section>
 
-  <div class="card">
+  <section class="card">
+    <div class="section-title">盈亏面板</div>
+    <div class="rowBtns">
+      <button class="btn green" onclick="recordDayProfit(true)">记录今日盈利</button>
+      <button class="btn red" onclick="recordDayProfit(false)">记录今日亏损</button>
+    </div>
+    <input id="profitAmount" class="input" type="number" value="50" placeholder="输入盈亏金额">
+    <div class="chartWrap">
+      <div class="small" style="margin-bottom:6px;">盈亏曲线</div>
+      <canvas id="profitChart" width="380" height="180"></canvas>
+    </div>
+  </section>
+
+  <section class="card">
     <div class="section-title">比赛分析</div>
     <div id="matches">等待分析...</div>
-  </div>
+  </section>
 
-  <div class="card">
+  <section id="sec-archive" class="card">
     <div class="section-title">归档中心</div>
     <button class="btn green" onclick="saveArchive()">保存今日方案归档</button>
     <select id="archiveSelect" class="select" onchange="loadArchive()">
       <option value="">选择历史比赛日</option>
     </select>
     <div id="archiveView" class="small" style="margin-top:10px;">暂无归档</div>
-  </div>
+  </section>
 
 </div>
 
 <div class="bottom-nav">
-  <div class="nav-item active"><b>🏠</b>首页</div>
-  <div class="nav-item"><b>📋</b>比赛</div>
-  <div class="nav-item"><b>🛡</b>风控</div>
-  <div class="nav-item"><b>🗂</b>归档</div>
+  <div class="nav-item active" data-target="sec-home"><b>🏠</b>首页</div>
+  <div class="nav-item" data-target="sec-match"><b>📋</b>比赛</div>
+  <div class="nav-item" data-target="sec-risk"><b>🛡</b>风控</div>
+  <div class="nav-item" data-target="sec-archive"><b>🗂</b>归档</div>
 </div>
 
 <script>
@@ -455,13 +488,13 @@ function renderTopStats(mainCount=0,warnCount=0){
 function renderRiskPanel(){
   const total = stats.win + stats.loss;
   const rate = total ? Math.round((stats.win / total) * 100) : 0;
-  let html = `<div class="pill-row">
-    <span class="pill">红单 ${stats.win}</span>
-    <span class="pill">黑单 ${stats.loss}</span>
-    <span class="pill">连错 ${stats.streak}</span>
-    <span class="pill">命中率 ${rate}%</span>
-  </div>`;
-  html += `<div class="divider"></div>`;
+  let html = `
+    <div class="pill">红单 ${stats.win}</div>
+    <div class="pill">黑单 ${stats.loss}</div>
+    <div class="pill">连错 ${stats.streak}</div>
+    <div class="pill">命中率 ${rate}%</div>
+    <div class="divider"></div>
+  `;
   if(stats.streak >= 3){
     html += `<div class="danger">⛔ 连错 ${stats.streak} 场，建议停手。</div>`;
   }else if(stats.streak === 2){
@@ -527,7 +560,6 @@ function rebuildMatchPool(){
   manualMatches.forEach(m => map[m.id] = m);
   currentMatches = Object.values(map);
 }
-
 function renderPool(){
   const box = document.getElementById('poolChips');
   if(!currentMatches.length){
@@ -645,18 +677,14 @@ function renderOverview(results){
 
   let html = '';
   if(label) html += `<div class="small">比赛日：${label}</div><div class="divider"></div>`;
-
   if(!results.length) return `<div class="warn">还没有选择今日比赛。</div>`;
-
   if(stats.streak >= 2){
     html += `<div class="warn">当前处于止损模式，请降低仓位。</div><div class="divider"></div>`;
   }
-
   if(!mains.length){
     html += `<div class="danger">今日无合格主线，建议观察。</div>`;
     return html;
   }
-
   html += `<div class="ok">主线：${mains.map(x=>`${x.id}${x.pick}`).join('；')}</div>`;
   if(warns.length){
     html += `<div class="small" style="margin-top:8px;">风险场：${warns.map(x=>x.id).join('、')}</div>`;
@@ -706,11 +734,9 @@ function renderBets(results,budget,singleMatch){
   const hedgeAmt = useBudget - singleAmt - comboAmt;
 
   let html = `
-    <div class="pill-row">
-      <span class="pill">主线预算 ${singleAmt}</span>
-      <span class="pill">串关预算 ${comboAmt}</span>
-      <span class="pill">防守预算 ${hedgeAmt}</span>
-    </div>
+    <div class="pill">主线预算 ${singleAmt}</div>
+    <div class="pill">串关预算 ${comboAmt}</div>
+    <div class="pill">防守预算 ${hedgeAmt}</div>
     <div class="divider"></div>
     <div>单关主线：${mains[0].id} ${mains[0].pick}（${singleAmt}元）</div>
   `;
@@ -792,15 +818,44 @@ function loadArchive(){
   document.getElementById('archiveView').innerHTML = html;
 }
 
+function saveProfitBook(){
+  localStorage.setItem('betapp_profit_book', JSON.stringify(profitBook));
+  renderTopStats();
+  drawProfitChart();
+}
+function recordDayProfit(isWin){
+  const label = dayKey();
+  if(!label || label === 'default-day') return;
+  const amountRaw = parseFloat(document.getElementById('profitAmount').value || '0');
+  const amount = Math.abs(amountRaw);
+  const signed = isWin ? amount : -amount;
+
+  const existing = profitBook.find(x => x.label === label);
+  if(existing){
+    existing.amount = signed;
+    existing.updatedAt = new Date().toLocaleString();
+  }else{
+    profitBook.push({
+      label,
+      amount: signed,
+      updatedAt: new Date().toLocaleString()
+    });
+  }
+  profitBook.sort((a,b) => a.label.localeCompare(b.label));
+  saveProfitBook();
+}
+function drawProfitChart(){
+  const canvas = document.getElementById('profitChart');
+  if(!canvas) return;
+}
+
 async function loadData(){
   try{
     const res = await fetch('./data/odds.json?v=' + Date.now());
     const data = await res.json();
     backendMatches = data.matches || [];
-
     document.getElementById('status').innerHTML = `✔ 已加载（${data.updated_at || '无时间'}）`;
     document.getElementById('kpiUpdated').textContent = (data.updated_at || '--').slice(11,16) || '--';
-
     loadSavedManualMatchesSilently();
     loadSelected();
     rebuildMatchPool();
@@ -832,6 +887,19 @@ function analyze(){
   document.getElementById('bets').innerHTML = renderBets(results,budget,singleMatch);
 }
 
+function bindNav(){
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item=>{
+    item.addEventListener('click', ()=>{
+      navItems.forEach(n=>n.classList.remove('active'));
+      item.classList.add('active');
+      const target = item.dataset.target;
+      const el = document.getElementById(target);
+      if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+}
+
 document.getElementById('budget').addEventListener('input', analyze);
 document.getElementById('singleMatch').addEventListener('input', analyze);
 document.getElementById('dayLabel').addEventListener('change', ()=>{
@@ -846,6 +914,7 @@ document.getElementById('dayLabel').addEventListener('change', ()=>{
 renderTopStats();
 renderRiskPanel();
 renderArchiveOptions();
+bindNav();
 setInterval(loadData, 30000);
 loadData();
 </script>
