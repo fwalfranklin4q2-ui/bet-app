@@ -25,7 +25,7 @@ jobs:
         run: mkdir -p data
 
       - name: run fetch
-        run: python fetch_v138.py
+        run: python ./fetch_v138.py
 
       - name: push result
         run: |
