@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>投注助手 V11（统计止损版）</title>
+<title>投注助手 V12（每日比赛半自动版）</title>
 <style>
   :root{
     --bg:#0b1220;
@@ -34,7 +34,7 @@
     margin-bottom:14px;
   }
   .card h3{margin:0 0 10px 0;font-size:18px}
-  .input{
+  .input, .textarea, .select{
     width:100%;
     border:none;
     border-radius:12px;
@@ -44,6 +44,7 @@
     color:#111827;
     margin-top:8px;
   }
+  .textarea{min-height:140px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
   .btn{
     width:100%;
     margin-top:10px;
@@ -58,6 +59,13 @@
   .btn.secondary{background:#334155}
   .btn.green{background:#166534}
   .btn.red{background:#991b1b}
+  .btn.blue{background:#1d4ed8}
+  .rowBtns{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:10px;
+  }
   .grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -100,61 +108,61 @@
   .warn{color:var(--yellow)}
   .danger{color:var(--red)}
   .ok{color:var(--green)}
-  .rowBtns{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-    margin-top:10px;
+  .chip{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:999px;
+    background:rgba(96,165,250,.12);
+    color:#c7d9ff;
+    font-size:12px;
+    margin:2px 4px 0 0;
   }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <div class="title">🔥 投注助手 V11（统计止损版）</div>
-  <div class="sub">自动赔率｜自动分析｜已下单记录｜红黑统计｜连错保护｜止损提示</div>
+  <div class="title">🔥 投注助手 V12（每日比赛半自动版）</div>
+  <div class="sub">每日比赛管理｜自动赔率｜自动分析｜防庄识别｜红黑统计｜止损保护</div>
 
   <div class="card">
-    <h3>总控参数</h3>
+    <h3>今日总控</h3>
     <input id="budget" class="input" type="number" value="200" placeholder="总预算">
     <input id="singleMatch" class="input" type="text" value="2006" placeholder="利润单关场编号">
-    <div class="small" style="margin-top:8px;">预算会自动分配到单关 / 2串1 / 防守。指定编号可作为利润单参考。</div>
+    <input id="dayLabel" class="input" type="text" value="" placeholder="今日标签，例如 2026-04-16 晚场">
+    <div class="small" style="margin-top:8px;">利润单只在指定编号开启。今日标签用于区分不同比赛日。</div>
   </div>
 
   <div class="card">
     <h3>自动赔率状态</h3>
     <div id="status">加载中...</div>
     <button class="btn" onclick="loadData()">立即读取后台数据</button>
-    <div class="small" style="margin-top:8px;">默认读取 ./data/odds.json，并每30秒自动刷新一次。</div>
+    <div class="small" style="margin-top:8px;">默认读取 ./data/odds.json，并每30秒自动刷新。</div>
+  </div>
+
+  <div class="card">
+    <h3>今日比赛池</h3>
+    <div class="small">从后台读取的比赛里，勾选今天要参与分析的场次。</div>
+    <div id="poolChips" style="margin-top:8px;">等待加载...</div>
+    <button class="btn blue" onclick="selectAllMatches()">全选今日比赛</button>
+    <button class="btn secondary" onclick="clearSelectedMatches()">清空今日比赛</button>
+  </div>
+
+  <div class="card">
+    <h3>手动补录比赛（可选）</h3>
+    <textarea id="manualMatches" class="textarea" placeholder='可补录 JSON 数组，例如 [{"id":"3001","home":"A","away":"B","league":"测试","homeOdds":1.80,"drawOdds":3.20,"awayOdds":4.20,"note":"手动补录"}]'></textarea>
+    <button class="btn secondary" onclick="mergeManualMatches()">合并手动补录到今日比赛池</button>
   </div>
 
   <div class="card">
     <h3>统计面板</h3>
     <div class="grid">
-      <div class="kpi">
-        <div class="v" id="kpiBudget">200</div>
-        <div class="l">总预算</div>
-      </div>
-      <div class="kpi">
-        <div class="v" id="kpiUpdated">--</div>
-        <div class="l">更新时间</div>
-      </div>
-      <div class="kpi">
-        <div class="v" id="kpiWin">0</div>
-        <div class="l">红单</div>
-      </div>
-      <div class="kpi">
-        <div class="v" id="kpiLoss">0</div>
-        <div class="l">黑单</div>
-      </div>
-      <div class="kpi">
-        <div class="v" id="kpiStreak">0</div>
-        <div class="l">连错</div>
-      </div>
-      <div class="kpi">
-        <div class="v" id="kpiRate">0%</div>
-        <div class="l">命中率</div>
-      </div>
+      <div class="kpi"><div class="v" id="kpiBudget">200</div><div class="l">总预算</div></div>
+      <div class="kpi"><div class="v" id="kpiUpdated">--</div><div class="l">更新时间</div></div>
+      <div class="kpi"><div class="v" id="kpiWin">0</div><div class="l">红单</div></div>
+      <div class="kpi"><div class="v" id="kpiLoss">0</div><div class="l">黑单</div></div>
+      <div class="kpi"><div class="v" id="kpiStreak">0</div><div class="l">连错</div></div>
+      <div class="kpi"><div class="v" id="kpiRate">0%</div><div class="l">命中率</div></div>
     </div>
   </div>
 
@@ -169,17 +177,17 @@
   </div>
 
   <div class="card">
-    <h3>防庄总判断</h3>
+    <h3>今日总判断</h3>
     <div id="overview">等待分析...</div>
   </div>
 
   <div class="card">
-    <h3>逐场分析</h3>
+    <h3>今日逐场分析</h3>
     <div id="matches">等待分析...</div>
   </div>
 
   <div class="card">
-    <h3>实战建议</h3>
+    <h3>今日实战建议</h3>
     <div id="bets">等待分析...</div>
   </div>
 
@@ -187,15 +195,18 @@
 
 <script>
 let currentMatches = [];
+let selectedMatchIds = JSON.parse(localStorage.getItem('betapp_selected_ids') || '[]');
 let lastSnapshot = JSON.parse(localStorage.getItem('betapp_odds_snapshot') || '{}');
 let stats = JSON.parse(localStorage.getItem('betapp_stats') || '{"win":0,"loss":0,"streak":0}');
 
+function saveSelected(){
+  localStorage.setItem('betapp_selected_ids', JSON.stringify(selectedMatchIds));
+}
 function saveStats(){
   localStorage.setItem('betapp_stats', JSON.stringify(stats));
   renderStats();
   analyze();
 }
-
 function renderStats(){
   const total = stats.win + stats.loss;
   const rate = total ? Math.round((stats.win / total) * 100) : 0;
@@ -206,7 +217,7 @@ function renderStats(){
 
   let html = '';
   if(stats.streak >= 3){
-    html = `<div class="danger">⛔ 连错 ${stats.streak} 场，建议今日停手或极小仓位。</div>`;
+    html = `<div class="danger">⛔ 连错 ${stats.streak} 场，建议今日停手或仅观察。</div>`;
   }else if(stats.streak === 2){
     html = `<div class="warn">⚠️ 连错 2 场，进入止损模式：预算减半、禁止强凑串关。</div>`;
   }else{
@@ -215,7 +226,6 @@ function renderStats(){
   html += `<div class="small" style="margin-top:8px;">红单 ${stats.win}｜黑单 ${stats.loss}｜命中率 ${rate}%</div>`;
   document.getElementById('riskPanel').innerHTML = html;
 }
-
 function markLastBet(type){
   if(type === 'win'){
     stats.win += 1;
@@ -226,7 +236,6 @@ function markLastBet(type){
   }
   saveStats();
 }
-
 function resetStats(){
   stats = {win:0, loss:0, streak:0};
   saveStats();
@@ -238,7 +247,6 @@ function minOddsSide(m){
   if(min === m.drawOdds) return '平';
   return '负';
 }
-
 function getBaseScore(m){
   let min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
   if(min < 1.35) return 82;
@@ -247,7 +255,6 @@ function getBaseScore(m){
   if(min < 2.20) return 58;
   return 42;
 }
-
 function getMovementInfo(m){
   const prev = lastSnapshot[m.id];
   if(!prev){
@@ -337,15 +344,79 @@ function antiBookieAnalyze(m, singleMatch){
   };
 }
 
+function renderPool(){
+  const box = document.getElementById('poolChips');
+  if(!currentMatches.length){
+    box.innerHTML = '暂无比赛';
+    return;
+  }
+  box.innerHTML = currentMatches.map(m => {
+    const active = selectedMatchIds.includes(m.id);
+    return `<span class="chip" style="border:${active ? '1px solid #4ade80' : '1px solid transparent'};cursor:pointer" onclick="toggleMatch('${m.id}')">${m.id} ${m.home}vs${m.away}</span>`;
+  }).join('');
+}
+
+function toggleMatch(id){
+  if(selectedMatchIds.includes(id)){
+    selectedMatchIds = selectedMatchIds.filter(x => x !== id);
+  }else{
+    selectedMatchIds.push(id);
+  }
+  saveSelected();
+  renderPool();
+  analyze();
+}
+
+function selectAllMatches(){
+  selectedMatchIds = currentMatches.map(m => m.id);
+  saveSelected();
+  renderPool();
+  analyze();
+}
+
+function clearSelectedMatches(){
+  selectedMatchIds = [];
+  saveSelected();
+  renderPool();
+  analyze();
+}
+
+function mergeManualMatches(){
+  const txt = document.getElementById('manualMatches').value.trim();
+  if(!txt) return;
+  try{
+    const arr = JSON.parse(txt);
+    if(!Array.isArray(arr)) return;
+    arr.forEach(item => {
+      if(!currentMatches.find(x => x.id === item.id)){
+        currentMatches.push(item);
+      }
+    });
+    renderPool();
+    analyze();
+    document.getElementById('status').innerHTML += '｜已合并手动补录';
+  }catch(e){}
+}
+
 function renderOverview(results){
   const mains = results.filter(x => x.level === '主线');
   const warns = results.filter(x => x.flags.length > 0);
 
   let html = '';
+  const label = document.getElementById('dayLabel').value.trim();
+  if(label){
+    html += `<div class="small">今日标签：${label}</div><div class="divider"></div>`;
+  }
+
   if(stats.streak >= 3){
     html += `<div class="danger">⛔ 连错达到 ${stats.streak}，建议今日停手。</div><div class="divider"></div>`;
   }else if(stats.streak === 2){
     html += `<div class="warn">⚠️ 止损模式中：预算减半，串关降级。</div><div class="divider"></div>`;
+  }
+
+  if(!results.length){
+    html += `<div class="warn">还没有选择今日比赛。</div>`;
+    return html;
   }
 
   if(!mains.length){
@@ -386,6 +457,9 @@ function renderBets(results, budget, singleMatch){
   const defense = results.filter(x => x.level === '防守').slice(0,1);
   const single = results.find(x => x.id === singleMatch && x.level !== '放弃');
 
+  if(!results.length){
+    return `<div class="warn">先选择今日比赛。</div>`;
+  }
   if(!mains.length){
     return `<div class="danger">今日主线不足，建议空仓或只做极小防守。</div>`;
   }
@@ -445,7 +519,9 @@ async function loadData(){
 
     document.getElementById('status').innerHTML = `✔ 已加载（${data.updated_at || '无时间'}）`;
     document.getElementById('kpiUpdated').textContent = (data.updated_at || '--').slice(11,16) || '--';
+    document.getElementById('kpiBudget').textContent = parseFloat(document.getElementById('budget').value || '200');
 
+    renderPool();
     analyze();
     updateSnapshot(currentMatches);
   }catch(e){
@@ -457,7 +533,8 @@ function analyze(){
   const budget = parseFloat(document.getElementById('budget').value || '200');
   const singleMatch = document.getElementById('singleMatch').value.trim();
 
-  const results = currentMatches.map(m => antiBookieAnalyze(m, singleMatch))
+  const filtered = currentMatches.filter(m => selectedMatchIds.includes(m.id));
+  const results = filtered.map(m => antiBookieAnalyze(m, singleMatch))
     .sort((a,b) => b.score - a.score);
 
   document.getElementById('kpiBudget').textContent = budget;
@@ -468,6 +545,7 @@ function analyze(){
 
 document.getElementById('budget').addEventListener('input', analyze);
 document.getElementById('singleMatch').addEventListener('input', analyze);
+document.getElementById('dayLabel').addEventListener('input', analyze);
 
 renderStats();
 setInterval(loadData, 30000);
