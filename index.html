@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>投注助手 V12.1（每日比赛增强版）</title>
+<title>投注助手 V13（比赛日归档版）</title>
 <style>
   :root{
     --bg:#0b1220;
@@ -34,7 +34,7 @@
     margin-bottom:14px;
   }
   .card h3{margin:0 0 10px 0;font-size:18px}
-  .input,.textarea{
+  .input,.textarea,.select{
     width:100%;
     border:none;
     border-radius:12px;
@@ -93,10 +93,7 @@
     color:#c7d9ff;
     border:1px solid transparent;
   }
-  .chip.active{
-    border-color:var(--green);
-    color:#fff;
-  }
+  .chip.active{border-color:var(--green);color:#fff}
   .match{
     background:var(--panel2);
     border-radius:14px;
@@ -126,20 +123,26 @@
   .warn{color:var(--yellow)}
   .danger{color:var(--red)}
   .ok{color:var(--green)}
+  .archiveItem{
+    background:var(--panel2);
+    border-radius:12px;
+    padding:10px;
+    margin-top:8px;
+  }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <div class="title">🔥 投注助手 V12.1（每日比赛增强版）</div>
-  <div class="sub">后台赔率 + 今日手动补录 + 本地保存 + 自动分析 + 防庄识别</div>
+  <div class="title">🔥 投注助手 V13（比赛日归档版）</div>
+  <div class="sub">每日比赛归档｜历史方案回看｜自动赔率｜自动分析｜红黑统计｜止损保护</div>
 
   <div class="card">
-    <h3>今日总控</h3>
+    <h3>比赛日总控</h3>
     <input id="budget" class="input" type="number" value="200" placeholder="总预算">
     <input id="singleMatch" class="input" type="text" value="2006" placeholder="利润单关场编号">
-    <input id="dayLabel" class="input" type="text" value="" placeholder="今日标签，例如 2026-04-15 晚场">
-    <div class="small" style="margin-top:8px;">今日标签会作为本地保存键值，方便每天单独维护比赛池。</div>
+    <input id="dayLabel" class="input" type="text" value="" placeholder="比赛日标签，例如 2026-04-15 晚场">
+    <div class="small" style="margin-top:8px;">每个比赛日标签都会独立保存：补录比赛、选中比赛、归档方案。</div>
   </div>
 
   <div class="card">
@@ -154,20 +157,26 @@
     <div id="poolChips">等待加载...</div>
     <button class="btn blue" onclick="selectAllMatches()">全选今日比赛</button>
     <button class="btn secondary" onclick="clearSelectedMatches()">清空今日比赛</button>
-    <div class="small" style="margin-top:8px;">点比赛标签可单独勾选/取消。</div>
   </div>
 
   <div class="card">
     <h3>手动补录今日比赛</h3>
     <textarea id="manualMatches" class="textarea" placeholder='粘贴 JSON 数组，例如:
 [
-  {"id":"1001","home":"球队A","away":"球队B","league":"英超","homeOdds":1.85,"drawOdds":3.45,"awayOdds":4.20,"note":"今日补录"},
-  {"id":"1002","home":"球队C","away":"球队D","league":"西甲","homeOdds":2.10,"drawOdds":3.10,"awayOdds":3.30,"note":"今日补录"}
+  {"id":"3001","home":"球队A","away":"球队B","league":"英超","homeOdds":1.85,"drawOdds":3.45,"awayOdds":4.20,"note":"今日补录"}
 ]'></textarea>
     <button class="btn" onclick="mergeManualMatches()">合并到今日比赛池</button>
     <button class="btn secondary" onclick="loadSavedManualMatches()">读取今日已保存补录</button>
     <button class="btn red" onclick="clearSavedManualMatches()">清空今日补录</button>
-    <div class="small" style="margin-top:8px;">补录内容会按“今日标签”保存在本地，刷新不丢。</div>
+  </div>
+
+  <div class="card">
+    <h3>比赛日归档</h3>
+    <button class="btn green" onclick="saveArchive()">保存今日方案归档</button>
+    <select id="archiveSelect" class="select" onchange="loadArchive()">
+      <option value="">选择历史比赛日</option>
+    </select>
+    <div id="archiveView" class="small" style="margin-top:10px;">暂无归档</div>
   </div>
 
   <div class="card">
@@ -217,10 +226,14 @@ let selectedMatchIds = JSON.parse(localStorage.getItem('betapp_selected_ids') ||
 let lastSnapshot = JSON.parse(localStorage.getItem('betapp_odds_snapshot') || '{}');
 let stats = JSON.parse(localStorage.getItem('betapp_stats') || '{"win":0,"loss":0,"streak":0}');
 
-function getDayKey(){
+function dayKey(){
   const label = document.getElementById('dayLabel').value.trim() || 'default-day';
-  return 'betapp_manual_matches_' + label;
+  return label;
 }
+function manualKey(){ return 'betapp_manual_matches_' + dayKey(); }
+function selectedKey(){ return 'betapp_selected_ids_' + dayKey(); }
+function archiveListKey(){ return 'betapp_archive_list'; }
+function archiveKey(label){ return 'betapp_archive_' + label; }
 
 function saveStats(){
   localStorage.setItem('betapp_stats', JSON.stringify(stats));
@@ -262,14 +275,17 @@ function resetStats(){
 }
 
 function saveSelected(){
-  localStorage.setItem('betapp_selected_ids', JSON.stringify(selectedMatchIds));
+  localStorage.setItem(selectedKey(), JSON.stringify(selectedMatchIds));
+}
+function loadSelected(){
+  selectedMatchIds = JSON.parse(localStorage.getItem(selectedKey()) || '[]');
 }
 function saveManualMatches(){
-  localStorage.setItem(getDayKey(), JSON.stringify(manualMatches));
+  localStorage.setItem(manualKey(), JSON.stringify(manualMatches));
 }
 function loadSavedManualMatches(){
   try{
-    manualMatches = JSON.parse(localStorage.getItem(getDayKey()) || '[]');
+    manualMatches = JSON.parse(localStorage.getItem(manualKey()) || '[]');
     document.getElementById('manualMatches').value = JSON.stringify(manualMatches, null, 2);
     rebuildMatchPool();
     renderPool();
@@ -277,9 +293,21 @@ function loadSavedManualMatches(){
     document.getElementById('status').innerHTML += '｜已读取今日补录';
   }catch(e){}
 }
+function loadSavedManualMatchesSilently(){
+  try{
+    manualMatches = JSON.parse(localStorage.getItem(manualKey()) || '[]');
+    if(manualMatches.length){
+      document.getElementById('manualMatches').value = JSON.stringify(manualMatches, null, 2);
+    }else{
+      document.getElementById('manualMatches').value = '';
+    }
+  }catch(e){
+    manualMatches = [];
+  }
+}
 function clearSavedManualMatches(){
   manualMatches = [];
-  localStorage.removeItem(getDayKey());
+  localStorage.removeItem(manualKey());
   document.getElementById('manualMatches').value = '';
   rebuildMatchPool();
   renderPool();
@@ -309,7 +337,6 @@ function rebuildMatchPool(){
   manualMatches.forEach(m => map[m.id] = m);
   currentMatches = Object.values(map);
 }
-
 function minOddsSide(m){
   const min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
   if(min === m.homeOdds) return '胜';
@@ -342,7 +369,6 @@ function getMovementInfo(m){
     flags
   };
 }
-
 function antiBookieAnalyze(m, singleMatch){
   const pick = minOddsSide(m);
   let score = getBaseScore(m);
@@ -358,6 +384,7 @@ function antiBookieAnalyze(m, singleMatch){
   if(note.includes('诱盘')) { score -= 10; flags.push('样本备注：诱盘'); }
   if(note.includes('异常')) { score -= 10; flags.push('样本备注：赔率异常'); }
   if(note.includes('均势')) { score -= 8; flags.push('样本备注：均势'); }
+  if(note.includes('伪强盘')) { score -= 10; flags.push('样本备注：伪强盘'); }
 
   if(spread < 0.45){ score -= 12; flags.push('伪均势盘'); }
   if(m.drawOdds < 3.0){ score -= 10; flags.push('平赔陷阱'); }
@@ -398,16 +425,7 @@ function antiBookieAnalyze(m, singleMatch){
     advice += '｜可做利润单';
   }
 
-  return {
-    ...m,
-    pick,
-    score,
-    level,
-    cls,
-    flags,
-    advice,
-    movement
-  };
+  return {...m,pick,score,level,cls,flags,advice,movement};
 }
 
 function renderPool(){
@@ -421,7 +439,6 @@ function renderPool(){
     return `<span class="chip ${active ? 'active' : ''}" onclick="toggleMatch('${m.id}')">${m.id} ${m.home}vs${m.away}</span>`;
   }).join('');
 }
-
 function toggleMatch(id){
   if(selectedMatchIds.includes(id)){
     selectedMatchIds = selectedMatchIds.filter(x => x !== id);
@@ -452,7 +469,7 @@ function renderOverview(results){
 
   let html = '';
   if(label){
-    html += `<div class="small">今日标签：${label}</div><div class="divider"></div>`;
+    html += `<div class="small">比赛日：${label}</div><div class="divider"></div>`;
   }
   html += `<div class="small">今日比赛数：${results.length}</div><div class="divider"></div>`;
 
@@ -532,11 +549,9 @@ function renderBets(results, budget, singleMatch){
   if(single){
     html += `<div style="margin-top:8px;">利润单：${single.id} ${single.pick}（从防守位中拆小额）</div>`;
   }
-
   if(stats.streak >= 2){
     html += `<div class="warn" style="margin-top:8px;">当前止损模式：总执行预算已自动降到 ${useBudget} 元。</div>`;
   }
-
   return html;
 }
 
@@ -553,6 +568,66 @@ function updateSnapshot(matches){
   lastSnapshot = next;
 }
 
+function saveArchive(){
+  const label = dayKey();
+  if(!label || label === 'default-day') return;
+  const budget = parseFloat(document.getElementById('budget').value || '200');
+  const singleMatch = document.getElementById('singleMatch').value.trim();
+  const filtered = currentMatches.filter(m => selectedMatchIds.includes(m.id));
+  const results = filtered.map(m => antiBookieAnalyze(m, singleMatch)).sort((a,b) => b.score - a.score);
+
+  const payload = {
+    label,
+    savedAt: new Date().toLocaleString(),
+    budget,
+    singleMatch,
+    selectedMatchIds,
+    manualMatches,
+    results,
+    stats
+  };
+
+  localStorage.setItem(archiveKey(label), JSON.stringify(payload));
+
+  let list = JSON.parse(localStorage.getItem(archiveListKey()) || '[]');
+  if(!list.includes(label)){
+    list.unshift(label);
+  }else{
+    list = [label, ...list.filter(x => x !== label)];
+  }
+  localStorage.setItem(archiveListKey(), JSON.stringify(list));
+  renderArchiveOptions();
+  document.getElementById('archiveView').innerHTML = `<div class="ok">已保存比赛日归档：${label}</div>`;
+}
+
+function renderArchiveOptions(){
+  const sel = document.getElementById('archiveSelect');
+  const list = JSON.parse(localStorage.getItem(archiveListKey()) || '[]');
+  sel.innerHTML = `<option value="">选择历史比赛日</option>` + list.map(x => `<option value="${x}">${x}</option>`).join('');
+}
+
+function loadArchive(){
+  const label = document.getElementById('archiveSelect').value;
+  if(!label) return;
+  const raw = localStorage.getItem(archiveKey(label));
+  if(!raw){
+    document.getElementById('archiveView').innerHTML = '归档不存在';
+    return;
+  }
+  const data = JSON.parse(raw);
+
+  let html = `<div class="archiveItem"><b>${data.label}</b><div class="small">保存时间：${data.savedAt}</div><div class="small">预算：${data.budget}｜利润单：${data.singleMatch}</div><div class="small">红单：${data.stats.win}｜黑单：${data.stats.loss}｜连错：${data.stats.streak}</div></div>`;
+  if(data.results && data.results.length){
+    html += data.results.map(m => `
+      <div class="archiveItem">
+        <div><b>${m.id} ${m.home} vs ${m.away}</b> <span class="tag ${m.cls}">${m.level}</span></div>
+        <div class="small">推荐：${m.pick}｜评分：${m.score}</div>
+      </div>
+    `).join('');
+  }
+  document.getElementById('archiveView').innerHTML = html;
+}
+
 async function loadData(){
   try{
     const res = await fetch('./data/odds.json?v=' + Date.now());
@@ -563,23 +638,13 @@ async function loadData(){
     document.getElementById('kpiBudget').textContent = parseFloat(document.getElementById('budget').value || '200');
 
     loadSavedManualMatchesSilently();
+    loadSelected();
     rebuildMatchPool();
     renderPool();
     analyze();
     updateSnapshot(currentMatches);
   }catch(e){
     document.getElementById('status').innerHTML = '❌ 后台数据读取失败';
-  }
-}
-
-function loadSavedManualMatchesSilently(){
-  try{
-    manualMatches = JSON.parse(localStorage.getItem(getDayKey()) || '[]');
-    if(manualMatches.length){
-      document.getElementById('manualMatches').value = JSON.stringify(manualMatches, null, 2);
-    }
-  }catch(e){
-    manualMatches = [];
   }
 }
 
@@ -599,11 +664,15 @@ document.getElementById('budget').addEventListener('input', analyze);
 document.getElementById('singleMatch').addEventListener('input', analyze);
 document.getElementById('dayLabel').addEventListener('change', () => {
   loadSavedManualMatches();
+  loadSelected();
+  rebuildMatchPool();
   renderPool();
   analyze();
+  renderArchiveOptions();
 });
 
 renderStats();
+renderArchiveOptions();
 setInterval(loadData, 30000);
 loadData();
 </script>
