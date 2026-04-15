@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>投注助手 V15（UI重构版）</title>
+<title>投注助手 V16（高级UI版）</title>
 <style>
   :root{
-    --bg:#08101f;
+    --bg:#07101d;
+    --bg2:#0b1220;
     --panel:#111a2e;
     --panel2:#16233b;
     --panel3:#0e1729;
@@ -19,49 +20,85 @@
     --blue:#60a5fa;
     --purple:#8b5cf6;
     --cyan:#22d3ee;
+    --shadow:0 10px 28px rgba(0,0,0,.22);
   }
   *{box-sizing:border-box}
   body{
     margin:0;
-    background:linear-gradient(180deg,#07101d 0%,#0b1220 100%);
+    background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
     color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif;
   }
   .app{
     max-width:430px;
     margin:0 auto;
-    padding:14px 14px 90px;
+    padding:14px 14px 100px;
   }
   .hero{
-    padding:10px 4px 14px;
+    background:linear-gradient(135deg,rgba(96,165,250,.20),rgba(139,92,246,.18),rgba(34,211,238,.10));
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:24px;
+    padding:18px 16px;
+    margin-bottom:14px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    right:-30px;
+    top:-20px;
+    width:120px;
+    height:120px;
+    background:rgba(255,255,255,.05);
+    border-radius:50%;
   }
   .hero-title{
     font-size:28px;
     font-weight:900;
-    line-height:1.2;
-    margin:0 0 6px;
+    line-height:1.15;
+    margin:0 0 8px;
+    letter-spacing:.3px;
   }
   .hero-sub{
-    color:var(--muted);
+    color:#d6def0;
     font-size:13px;
-    line-height:1.5;
+    line-height:1.55;
+  }
+  .hero-pills{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+  .pill{
+    padding:7px 11px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    background:rgba(255,255,255,.10);
+    color:#eef4ff;
+    backdrop-filter:blur(6px);
   }
   .card{
     background:linear-gradient(180deg,var(--panel) 0%,#0f1729 100%);
-    border:1px solid rgba(255,255,255,.04);
-    border-radius:20px;
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:22px;
     padding:16px;
     margin-bottom:14px;
-    box-shadow:0 8px 30px rgba(0,0,0,.18);
+    box-shadow:var(--shadow);
   }
   .section-title{
     font-size:20px;
-    font-weight:800;
-    margin:0 0 10px;
+    font-weight:900;
+    margin:0 0 8px;
+    line-height:1.2;
   }
   .section-sub{
     color:var(--muted);
     font-size:13px;
+    line-height:1.5;
     margin-bottom:10px;
   }
   .grid{
@@ -70,8 +107,8 @@
     gap:10px;
   }
   .kpi{
-    background:var(--panel2);
-    border-radius:16px;
+    background:linear-gradient(180deg,var(--panel2) 0%,#101b33 100%);
+    border-radius:18px;
     padding:14px 12px;
     position:relative;
     overflow:hidden;
@@ -81,24 +118,25 @@
     position:absolute;
     right:-20px;
     top:-20px;
-    width:70px;
-    height:70px;
+    width:78px;
+    height:78px;
     background:rgba(255,255,255,.04);
     border-radius:50%;
   }
   .kpi-v{
     font-size:24px;
     font-weight:900;
+    line-height:1;
   }
   .kpi-l{
-    margin-top:6px;
+    margin-top:7px;
     font-size:12px;
     color:var(--muted);
   }
   .input,.textarea,.select{
     width:100%;
     border:none;
-    border-radius:14px;
+    border-radius:16px;
     padding:14px;
     font-size:16px;
     background:#f3f4f6;
@@ -114,40 +152,35 @@
     width:100%;
     margin-top:10px;
     border:none;
-    border-radius:14px;
+    border-radius:16px;
     padding:14px;
-    font-size:16px;
-    font-weight:800;
+    font-size:15px;
+    font-weight:900;
     color:#fff;
-    background:linear-gradient(90deg,#4f73ff,#7b5cff);
+    background:linear-gradient(90deg,#5977ff,#8a5cff);
   }
-  .btn.secondary{background:#334155}
+  .btn.secondary{background:linear-gradient(90deg,#334155,#3f4d61)}
+  .btn.blue{background:linear-gradient(90deg,#1d4ed8,#2563eb)}
   .btn.green{background:linear-gradient(90deg,#166534,#16a34a)}
   .btn.red{background:linear-gradient(90deg,#7f1d1d,#dc2626)}
-  .btn.blue{background:linear-gradient(90deg,#1d4ed8,#2563eb)}
   .rowBtns{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:8px;
     margin-top:10px;
   }
-  .pill-row{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
+  .core-card{
+    background:linear-gradient(135deg,rgba(74,124,255,.18),rgba(139,92,246,.12));
+    border:1px solid rgba(123,92,255,.24);
+    border-radius:18px;
+    padding:14px;
     margin-top:8px;
   }
-  .pill{
-    padding:6px 10px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:700;
-    background:rgba(96,165,250,.13);
-    color:#dbeafe;
+  .core-title{
+    font-size:15px;
+    font-weight:900;
+    margin-bottom:8px;
   }
-  .ok{color:var(--green)}
-  .warn{color:var(--yellow)}
-  .danger{color:var(--red)}
   .small{
     color:var(--muted);
     font-size:13px;
@@ -157,18 +190,6 @@
     height:1px;
     background:var(--line);
     margin:10px 0;
-  }
-  .core-card{
-    background:linear-gradient(135deg,rgba(74,124,255,.18),rgba(139,92,246,.12));
-    border:1px solid rgba(123,92,255,.22);
-    border-radius:18px;
-    padding:14px;
-    margin-top:10px;
-  }
-  .core-title{
-    font-size:16px;
-    font-weight:900;
-    margin-bottom:8px;
   }
   .chip{
     display:inline-block;
@@ -186,9 +207,9 @@
     background:rgba(74,222,128,.12);
   }
   .match{
-    background:var(--panel3);
+    background:linear-gradient(180deg,var(--panel3) 0%,#0f182d 100%);
     border:1px solid rgba(255,255,255,.04);
-    border-radius:18px;
+    border-radius:20px;
     padding:14px;
     margin-top:10px;
   }
@@ -202,11 +223,12 @@
     font-size:12px;
     color:var(--cyan);
     margin-bottom:4px;
-    font-weight:700;
+    font-weight:800;
+    letter-spacing:.3px;
   }
   .match-name{
     font-size:18px;
-    font-weight:800;
+    font-weight:900;
     line-height:1.35;
   }
   .match-league{
@@ -219,7 +241,7 @@
     padding:6px 10px;
     border-radius:999px;
     font-size:12px;
-    font-weight:800;
+    font-weight:900;
     white-space:nowrap;
   }
   .t-green{background:rgba(74,222,128,.15);color:var(--green)}
@@ -233,8 +255,8 @@
     margin-top:10px;
   }
   .odds-box{
-    background:#111b31;
-    border-radius:12px;
+    background:#101b31;
+    border-radius:14px;
     padding:10px 8px;
     text-align:center;
   }
@@ -246,7 +268,7 @@
   }
   .odds-box span{
     font-size:18px;
-    font-weight:800;
+    font-weight:900;
   }
   .archiveItem{
     background:var(--panel3);
@@ -254,19 +276,23 @@
     padding:12px;
     margin-top:8px;
   }
+  .ok{color:var(--green)}
+  .warn{color:var(--yellow)}
+  .danger{color:var(--red)}
   .bottom-nav{
     position:fixed;
     left:50%;
     transform:translateX(-50%);
     bottom:12px;
     width:min(430px,calc(100% - 18px));
-    background:rgba(10,16,29,.92);
+    background:rgba(10,16,29,.93);
     border:1px solid rgba(255,255,255,.06);
-    border-radius:22px;
+    border-radius:24px;
     display:grid;
     grid-template-columns:repeat(4,1fr);
     padding:8px 6px;
-    backdrop-filter:blur(10px);
+    backdrop-filter:blur(12px);
+    box-shadow:0 10px 30px rgba(0,0,0,.28);
   }
   .nav-item{
     text-align:center;
@@ -288,8 +314,14 @@
 <div class="app">
 
   <div class="hero">
-    <div class="hero-title">🔥 投注助手 V15</div>
-    <div class="hero-sub">UI重构版｜每日比赛池｜自动赔率｜自动分析｜防庄识别｜归档与盈亏面板</div>
+    <div class="hero-title">🔥 投注助手 V16</div>
+    <div class="hero-sub">高级 UI 版｜自动赔率｜每日比赛池｜自动分析｜防庄识别｜归档与盈亏面板</div>
+    <div class="hero-pills">
+      <div class="pill">自动读取赔率</div>
+      <div class="pill">主线/防守分层</div>
+      <div class="pill">比赛日归档</div>
+      <div class="pill">盈亏统计</div>
+    </div>
   </div>
 
   <div class="card">
@@ -310,7 +342,7 @@
   </div>
 
   <div class="card">
-    <div class="section-title">参数设置</div>
+    <div class="section-title">参数与状态</div>
     <input id="budget" class="input" type="number" value="200" placeholder="总预算">
     <input id="singleMatch" class="input" type="text" value="2006" placeholder="利润单关场编号">
     <input id="dayLabel" class="input" type="text" value="" placeholder="比赛日标签，例如 2026-04-15 晚场">
@@ -340,7 +372,7 @@
   </div>
 
   <div class="card">
-    <div class="section-title">风险预警</div>
+    <div class="section-title">风控面板</div>
     <div id="riskPanel">等待分析...</div>
     <div class="rowBtns">
       <button class="btn green" onclick="markLastBet('win')">最近一单：红了</button>
@@ -682,7 +714,6 @@ function renderBets(results,budget,singleMatch){
     <div class="divider"></div>
     <div>单关主线：${mains[0].id} ${mains[0].pick}（${singleAmt}元）</div>
   `;
-
   if(mains.length >= 2){
     html += `<div>2串1主线：${mains[0].id}${mains[0].pick} + ${mains[1].id}${mains[1].pick}（${comboAmt}元）</div>`;
   }else if(gains.length){
@@ -690,17 +721,14 @@ function renderBets(results,budget,singleMatch){
   }else{
     html += `<div>2串1：今日不建议强凑</div>`;
   }
-
   if(defense.length){
     html += `<div>防守位：${defense[0].id} ${defense[0].pick}（${hedgeAmt}元）</div>`;
   }else{
     html += `<div>防守位：主线反方向小防（${hedgeAmt}元）</div>`;
   }
-
   if(single){
     html += `<div style="margin-top:8px;">利润单：${single.id} ${single.pick}</div>`;
   }
-
   return html;
 }
 
@@ -727,7 +755,6 @@ function saveArchive(){
     results,
     stats
   };
-
   localStorage.setItem(archiveKey(label), JSON.stringify(payload));
 
   let list = JSON.parse(localStorage.getItem(archiveListKey()) || '[]');
@@ -765,15 +792,6 @@ function loadArchive(){
   document.getElementById('archiveView').innerHTML = html;
 }
 
-function updateSnapshot(matches){
-  const next = {};
-  matches.forEach(m=>{
-    next[m.id] = {homeOdds:m.homeOdds, drawOdds:m.drawOdds, awayOdds:m.awayOdds};
-  });
-  localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
-  lastSnapshot = next;
-}
-
 async function loadData(){
   try{
     const res = await fetch('./data/odds.json?v=' + Date.now());
@@ -793,7 +811,14 @@ async function loadData(){
     document.getElementById('status').innerHTML = '❌ 后台数据读取失败';
   }
 }
-
+function updateSnapshot(matches){
+  const next = {};
+  matches.forEach(m=>{
+    next[m.id] = {homeOdds:m.homeOdds, drawOdds:m.drawOdds, awayOdds:m.awayOdds};
+  });
+  localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
+  lastSnapshot = next;
+}
 function analyze(){
   const budget = parseFloat(document.getElementById('budget').value || '200');
   const singleMatch = document.getElementById('singleMatch').value.trim();
@@ -801,6 +826,7 @@ function analyze(){
   const results = filtered.map(m=>antiBookieAnalyze(m,singleMatch)).sort((a,b)=>b.score-a.score);
 
   renderTopStats(results.filter(x=>x.level==='主线').length, results.filter(x=>x.flags.length>0).length);
+  renderRiskPanel();
   document.getElementById('overview').innerHTML = renderOverview(results);
   document.getElementById('matches').innerHTML = renderMatches(results);
   document.getElementById('bets').innerHTML = renderBets(results,budget,singleMatch);
@@ -817,8 +843,8 @@ document.getElementById('dayLabel').addEventListener('change', ()=>{
   renderArchiveOptions();
 });
 
-renderRiskPanel();
 renderTopStats();
+renderRiskPanel();
 renderArchiveOptions();
 setInterval(loadData, 30000);
 loadData();
