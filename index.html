@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>投注助手 V13（比赛日归档版）</title>
+<title>投注助手 V14（盈亏曲线版）</title>
 <style>
   :root{
     --bg:#0b1220;
@@ -129,20 +129,31 @@
     padding:10px;
     margin-top:8px;
   }
+  .chartWrap{
+    background:var(--panel2);
+    border-radius:12px;
+    padding:10px;
+    margin-top:10px;
+  }
+  canvas{
+    width:100%;
+    height:180px;
+    display:block;
+  }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <div class="title">🔥 投注助手 V13（比赛日归档版）</div>
-  <div class="sub">每日比赛归档｜历史方案回看｜自动赔率｜自动分析｜红黑统计｜止损保护</div>
+  <div class="title">🔥 投注助手 V14（盈亏曲线版）</div>
+  <div class="sub">每日归档｜盈亏记录｜走势曲线｜自动赔率｜自动分析｜止损保护</div>
 
   <div class="card">
     <h3>比赛日总控</h3>
     <input id="budget" class="input" type="number" value="200" placeholder="总预算">
     <input id="singleMatch" class="input" type="text" value="2006" placeholder="利润单关场编号">
     <input id="dayLabel" class="input" type="text" value="" placeholder="比赛日标签，例如 2026-04-15 晚场">
-    <div class="small" style="margin-top:8px;">每个比赛日标签都会独立保存：补录比赛、选中比赛、归档方案。</div>
+    <div class="small" style="margin-top:8px;">每个比赛日标签都会独立保存：补录比赛、已选比赛、归档方案、盈亏结果。</div>
   </div>
 
   <div class="card">
@@ -161,10 +172,7 @@
 
   <div class="card">
     <h3>手动补录今日比赛</h3>
-    <textarea id="manualMatches" class="textarea" placeholder='粘贴 JSON 数组，例如:
-[
-  {"id":"3001","home":"球队A","away":"球队B","league":"英超","homeOdds":1.85,"drawOdds":3.45,"awayOdds":4.20,"note":"今日补录"}
-]'></textarea>
+    <textarea id="manualMatches" class="textarea" placeholder='粘贴 JSON 数组'></textarea>
     <button class="btn" onclick="mergeManualMatches()">合并到今日比赛池</button>
     <button class="btn secondary" onclick="loadSavedManualMatches()">读取今日已保存补录</button>
     <button class="btn red" onclick="clearSavedManualMatches()">清空今日补录</button>
@@ -180,7 +188,7 @@
   </div>
 
   <div class="card">
-    <h3>统计面板</h3>
+    <h3>盈亏总览</h3>
     <div class="grid">
       <div class="kpi"><div class="v" id="kpiBudget">200</div><div class="l">总预算</div></div>
       <div class="kpi"><div class="v" id="kpiUpdated">--</div><div class="l">更新时间</div></div>
@@ -188,6 +196,19 @@
       <div class="kpi"><div class="v" id="kpiLoss">0</div><div class="l">黑单</div></div>
       <div class="kpi"><div class="v" id="kpiStreak">0</div><div class="l">连错</div></div>
       <div class="kpi"><div class="v" id="kpiRate">0%</div><div class="l">命中率</div></div>
+      <div class="kpi"><div class="v" id="kpiProfit">0</div><div class="l">累计盈亏</div></div>
+      <div class="kpi"><div class="v" id="kpiDays">0</div><div class="l">已归档天数</div></div>
+    </div>
+
+    <div class="rowBtns">
+      <button class="btn green" onclick="recordDayProfit(true)">记录今日盈利</button>
+      <button class="btn red" onclick="recordDayProfit(false)">记录今日亏损</button>
+    </div>
+    <input id="profitAmount" class="input" type="number" value="50" placeholder="输入盈亏金额，例如 50 或 100">
+
+    <div class="chartWrap">
+      <div class="small" style="margin-bottom:6px;">盈亏曲线</div>
+      <canvas id="profitChart" width="380" height="180"></canvas>
     </div>
   </div>
 
@@ -222,9 +243,10 @@
 let backendMatches = [];
 let manualMatches = [];
 let currentMatches = [];
-let selectedMatchIds = JSON.parse(localStorage.getItem('betapp_selected_ids') || '[]');
+let selectedMatchIds = [];
 let lastSnapshot = JSON.parse(localStorage.getItem('betapp_odds_snapshot') || '{}');
 let stats = JSON.parse(localStorage.getItem('betapp_stats') || '{"win":0,"loss":0,"streak":0}');
+let profitBook = JSON.parse(localStorage.getItem('betapp_profit_book') || '[]');
 
 function dayKey(){
   const label = document.getElementById('dayLabel').value.trim() || 'default-day';
@@ -296,11 +318,7 @@ function loadSavedManualMatches(){
 function loadSavedManualMatchesSilently(){
   try{
     manualMatches = JSON.parse(localStorage.getItem(manualKey()) || '[]');
-    if(manualMatches.length){
-      document.getElementById('manualMatches').value = JSON.stringify(manualMatches, null, 2);
-    }else{
-      document.getElementById('manualMatches').value = '';
-    }
+    document.getElementById('manualMatches').value = manualMatches.length ? JSON.stringify(manualMatches, null, 2) : '';
   }catch(e){
     manualMatches = [];
   }
@@ -312,7 +330,6 @@ function clearSavedManualMatches(){
   rebuildMatchPool();
   renderPool();
   analyze();
-  document.getElementById('status').innerHTML += '｜已清空今日补录';
 }
 function mergeManualMatches(){
   const txt = document.getElementById('manualMatches').value.trim();
@@ -337,6 +354,7 @@ function rebuildMatchPool(){
   manualMatches.forEach(m => map[m.id] = m);
   currentMatches = Object.values(map);
 }
+
 function minOddsSide(m){
   const min = Math.min(m.homeOdds, m.drawOdds, m.awayOdds);
   if(min === m.homeOdds) return '胜';
@@ -555,17 +573,10 @@ function renderBets(results, budget, singleMatch){
   return html;
 }
 
-function updateSnapshot(matches){
-  const next = {};
-  matches.forEach(m => {
-    next[m.id] = {
-      homeOdds:m.homeOdds,
-      drawOdds:m.drawOdds,
-      awayOdds:m.awayOdds
-    };
-  });
-  localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
-  lastSnapshot = next;
+function renderArchiveOptions(){
+  const sel = document.getElementById('archiveSelect');
+  const list = JSON.parse(localStorage.getItem(archiveListKey()) || '[]');
+  sel.innerHTML = `<option value="">选择历史比赛日</option>` + list.map(x => `<option value="${x}">${x}</option>`).join('');
 }
 
 function saveArchive(){
@@ -600,12 +611,6 @@ function saveArchive(){
   document.getElementById('archiveView').innerHTML = `<div class="ok">已保存比赛日归档：${label}</div>`;
 }
 
-function renderArchiveOptions(){
-  const sel = document.getElementById('archiveSelect');
-  const list = JSON.parse(localStorage.getItem(archiveListKey()) || '[]');
-  sel.innerHTML = `<option value="">选择历史比赛日</option>` + list.map(x => `<option value="${x}">${x}</option>`).join('');
-}
-
 function loadArchive(){
   const label = document.getElementById('archiveSelect').value;
   if(!label) return;
@@ -626,6 +631,115 @@ function loadArchive(){
     `).join('');
   }
   document.getElementById('archiveView').innerHTML = html;
+}
+
+function saveProfitBook(){
+  localStorage.setItem('betapp_profit_book', JSON.stringify(profitBook));
+  renderProfitPanel();
+}
+function recordDayProfit(isWin){
+  const label = dayKey();
+  if(!label || label === 'default-day') return;
+  const amountRaw = parseFloat(document.getElementById('profitAmount').value || '0');
+  const amount = Math.abs(amountRaw);
+  const signed = isWin ? amount : -amount;
+
+  const existing = profitBook.find(x => x.label === label);
+  if(existing){
+    existing.amount = signed;
+    existing.updatedAt = new Date().toLocaleString();
+  }else{
+    profitBook.push({
+      label,
+      amount: signed,
+      updatedAt: new Date().toLocaleString()
+    });
+  }
+  profitBook.sort((a,b) => a.label.localeCompare(b.label));
+  saveProfitBook();
+}
+function renderProfitPanel(){
+  const total = profitBook.reduce((s,x) => s + x.amount, 0);
+  document.getElementById('kpiProfit').textContent = total;
+  document.getElementById('kpiDays').textContent = profitBook.length;
+  drawProfitChart();
+}
+function drawProfitChart(){
+  const canvas = document.getElementById('profitChart');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0,0,w,h);
+
+  if(!profitBook.length){
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('暂无盈亏记录', 130, 90);
+    return;
+  }
+
+  const cumulative = [];
+  let sum = 0;
+  for(const item of profitBook){
+    sum += item.amount;
+    cumulative.push({ label:item.label, value:sum });
+  }
+
+  const values = cumulative.map(x => x.value);
+  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 0);
+  const span = (max - min) || 1;
+
+  const left = 30, right = w - 10, top = 15, bottom = h - 25;
+  const zeroY = top + (max / span) * (bottom - top);
+
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(left, zeroY);
+  ctx.lineTo(right, zeroY);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#60a5fa';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  cumulative.forEach((p, i) => {
+    const x = left + (i * (right - left) / Math.max(cumulative.length - 1, 1));
+    const y = top + ((max - p.value) / span) * (bottom - top);
+    if(i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  cumulative.forEach((p, i) => {
+    const x = left + (i * (right - left) / Math.max(cumulative.length - 1, 1));
+    const y = top + ((max - p.value) / span) * (bottom - top);
+    ctx.fillStyle = p.value >= 0 ? '#4ade80' : '#f87171';
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = '11px sans-serif';
+  ctx.fillText(`最高 ${max}`, 8, 12);
+  ctx.fillText(`最低 ${min}`, 8, h - 8);
+}
+
+function updateSnapshot(matches){
+  const next = {};
+  matches.forEach(m => {
+    next[m.id] = {
+      homeOdds:m.homeOdds,
+      drawOdds:m.drawOdds,
+      awayOdds:m.awayOdds
+    };
+  });
+  localStorage.setItem('betapp_odds_snapshot', JSON.stringify(next));
+  lastSnapshot = next;
 }
 
 async function loadData(){
@@ -673,6 +787,7 @@ document.getElementById('dayLabel').addEventListener('change', () => {
 
 renderStats();
 renderArchiveOptions();
+renderProfitPanel();
 setInterval(loadData, 30000);
 loadData();
 </script>
