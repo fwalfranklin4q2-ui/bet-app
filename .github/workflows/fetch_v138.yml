@@ -6,6 +6,8 @@ on:
     - cron: "*/5 * * * *"
 permissions:
   contents: write
+  permissions:
+  contents: write
 jobs:
   fetch:
     runs-on: ubuntu-latest
