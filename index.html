@@ -512,7 +512,7 @@
       <canvas id="profitChart" width="380" height="180"></canvas>
     </div>
   </section>
-
+<div id="backendList"></div>
   <section class="card">
     <div class="section-title">比赛分析</div>
     <div id="matches">等待分析...</div>
@@ -538,6 +538,49 @@
 
 <script>
 let backendMatches = [];
+
+fetch('data/odds.json')
+  .then(res => res.json())
+  .then(data => {
+    backendMatches = data.matches || [];
+    renderBackendMatches();
+  })
+  .catch(err => {
+    console.log('加载赔率失败', err);
+  });
+
+function renderBackendMatches(){
+  const container = document.getElementById('backendList');
+  if(!container) return;
+
+  container.innerHTML = backendMatches.map(m => `
+    <div style="border:1px solid #ddd;padding:10px;margin:10px 0;border-radius:8px;">
+      <div><b>${m.id}</b> ${m.home} vs ${m.away}</div>
+      <div>赔率：${m.homeOdds} / ${m.drawOdds} / ${m.awayOdds}</div>
+      <div style="color:#e91e63;">
+        推荐：${m.analysis?.recommend ?? '-'}
+        | 信心：${m.analysis?.confidence ?? '-'}%
+        | 风险：${m.analysis?.risk ?? '-'}
+      </div>
+      <div style="color:#999;">标签：${m.analysis?.tag ?? '-'}</div>
+    </div>
+  `).join('');
+}
+
+
+  container.innerHTML = backendMatches.map(m => `
+    <div style="border:1px solid #ddd;padding:10px;margin:10px 0;border-radius:8px;">
+      <div><b>${m.id}</b> ${m.home} vs ${m.away}</div>
+      <div>赔率：${m.homeOdds} / ${m.drawOdds} / ${m.awayOdds}</div>
+      <div style="color:#e91e63;">
+        推荐：${m.analysis?.recommend ?? '-'} 
+        | 信心：${m.analysis?.confidence ?? '-'}%
+        | 风险：${m.analysis?.risk ?? '-'}
+      </div>
+      <div style="color:#999;">标签：${m.analysis?.tag ?? '-'}</div>
+    </div>
+  `).join('');
+}
 let manualMatches = [];
 let currentMatches = [];
 let selectedMatchIds = [];
