@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-15 13:18:16 UTC",
+  "updated_at": "2026-04-15 15:20:45 UTC",
   "matches": [
     {
       "id": "3005",
@@ -9,7 +9,13 @@
       "homeOdds": 1.36,
       "drawOdds": 4.25,
       "awayOdds": 6.3,
-      "note": "主稳"
+      "note": "主稳",
+      "analysis": {
+        "recommend": "胜",
+        "confidence": 78,
+        "risk": "低",
+        "tag": "主稳胆"
+      }
     },
     {
       "id": "3006",
@@ -19,7 +25,13 @@
       "homeOdds": 1.46,
       "drawOdds": 4.85,
       "awayOdds": 4.2,
-      "note": "强强对话"
+      "note": "强强对话",
+      "analysis": {
+        "recommend": "胜",
+        "confidence": 78,
+        "risk": "低",
+        "tag": "主稳胆"
+      }
     },
     {
       "id": "3007",
@@ -29,7 +41,13 @@
       "homeOdds": 1.44,
       "drawOdds": 3.7,
       "awayOdds": 6.1,
-      "note": "主胜趋势"
+      "note": "主胜趋势",
+      "analysis": {
+        "recommend": "胜",
+        "confidence": 78,
+        "risk": "低",
+        "tag": "主稳胆"
+      }
     }
   ]
 }
